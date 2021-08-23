@@ -3,7 +3,7 @@ using namespace std;
 
 void menu() {
 	//메뉴
-	cout << "----Mart Systm----" << endl;
+	cout << "----Mart System----" << endl;
 	cout << "| 1. 품목 추가\t|" << endl;
 	cout << "| 2. 품목 삭제\t|" << endl;
 	cout << "| 3. 입고\t|" << endl;
@@ -35,27 +35,27 @@ void delProduct() {
 }
 
 void buy() {
-	//구매
+	//구매(품목을 찾아서, 산 수량만큼 -)
 
 }
 
 void refund() {
-	//환불
+	//환불(품목을 찾아서, 환불할 수량만큼 +)
 
 }
 
 void warehousing() {
-	//입고(원래 있는 제품)
+	//입고(원래 있는 제품에 수량 +)
 
 }
 
 void release() {
-	//출고(원래 있는 제품)
+	//출고(원래 있는 제품에 수량 -)
 
 }
 
 void totalProfit() {
-	//누적 수익
+	//누적 수익 -> 소비자들의 구매로 인한 수익
 
 }
 
