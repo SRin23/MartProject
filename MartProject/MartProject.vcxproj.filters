@@ -15,7 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="createtbl.c">
+    <ClCompile Include="martSystem_Manager.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Test.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
