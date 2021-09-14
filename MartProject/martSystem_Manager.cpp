@@ -1,3 +1,11 @@
+/*
+ - DB연동 -> 제품정보 저장(할 수 있다면 유통기간 정보까지 전달)
+ - product를 연결리스트로 구현
+ - login화면(manager, cashier)
+ - cashier화면 구현
+ - 품목 삭제 구현
+*/
+
 #include<iostream>
 #include<cstdio>
 #include<conio.h>	//getch사용
