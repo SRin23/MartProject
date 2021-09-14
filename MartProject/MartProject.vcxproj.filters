@@ -15,10 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="martSystem_Manager.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="loginMain.cpp">
+    <ClCompile Include="martSystem_Cashier.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

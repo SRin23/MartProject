@@ -10,18 +10,28 @@ void gotoxy(int x, int y);	//좌표찍기
 
 int main() {
 	init();
-	gotoxy(10, 20);
-	cout << "로그인";
+	gotoxy(35, 10);
+	cout << "<Log-in>";
 	string id;
 	string password;
+	gotoxy(31, 12);
+	cout << "아이디 : ";
+	cin >> id;
+	gotoxy(31, 13);
+	cout << "비밀번호 : ";
+	cin >> password;
+
 	if (id == "manager" && password == "manager01") {
 		//martSystem_Manager.cpp
+		cout << "마트관리" << endl;
 	}
 	else if (id == "cashier" && password == "cashier01") {
 		//martSystem_Cashier.cpp
+		cout << "마트계산" << endl;
 	}
 	else {
 		//잘못된 아이디/비밀번호 입니다.
+		cout << "잘못된 아이디/비밀번호 입니다." << endl;
 	}
 	return 0;
 }
