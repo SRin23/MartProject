@@ -20,8 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AllCode.cpp" />
-    <ClCompile Include="loginMain.cpp" />
-    <ClCompile Include="martSystem_Cashier.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

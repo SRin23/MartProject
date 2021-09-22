@@ -1,8 +1,6 @@
 /*
  - DB연동 -> 제품정보 저장(할 수 있다면 유통기간 정보까지 전달)
  - product를 연결리스트로 구현
- - login화면(manager, cashier)
- - cashier화면 구현
  - 품목 삭제 구현
 */
 
@@ -24,26 +22,31 @@ using namespace std;
 void init();	//초기화
 void gotoxy(int x, int y);	//좌표찍기
 int keyControl();	//방향키로 좌표 조절하기
-void title();	//title 출력하기
-int menu();	//메뉴 출력, 선택
+void cashierTitle();	//title 출력하기
+int cashierMenu();	//메뉴 출력, 선택
+void managerTitle();	//title 출력하기
+int managerMenu();	//메뉴 출력, 선택
 
 //제품정보
 class Product {
 	string productName;	//제품 이름
 	int price;			//제품 가격
+	int customerPrice;	//소비자가격
 	int quantity;		//제품 수량
 
 public:
 	Product() {
 		productName = "";
 		price = 0;
+		customerPrice = 0;
 		quantity = 0;
 	}
-	Product(string productName, int price, int quantity) :productName(productName), price(price), quantity(quantity) {};
+	Product(string productName, int price, int customerPrice, int quantity) :productName(productName), price(price), customerPrice(customerPrice), quantity(quantity) {};
 	~Product() {}
 	void print() {
 		cout << "제품이름 : " << productName << endl;
 		cout << "제품가격 : " << price << endl;
+		cout << "소비자가격 : " << customerPrice << endl;
 		cout << "제품수량 : " << quantity << endl;
 		cout << "합계 : " << price * quantity << endl;
 	}
@@ -51,7 +54,13 @@ public:
 	//getter
 	string getProductName() { return this->productName; }
 	int getPrice() { return this->price; }
+	int getCustomerPrice() { return this->customerPrice; }
 	int getQuantity() { return this->quantity; }
+
+	//수량 +/-
+	void addQuantity(int quantity) { this->quantity += quantity; }
+	void disQuantity(int quantity) { this->quantity -= quantity; }
+
 };
 
 //전역멤버변수
@@ -59,21 +68,16 @@ int allSum = 0;
 Product* product[10];
 int cnt = 0;
 
+//Manager
 //누적 수익 -> 소비자들의 구매로 인한 수익 -> 항상 맨위에?
 void totalProfit() {
-	system("cls");
 	gotoxy(0, 0);
-	cout << "현재까지 누적된 수익 : " << allSum << endl;
-
-	while (true) {
-		if (keyControl() == TAB) {
-			break;
-		}
-	}
+	cout << "누적수익 : " << allSum << endl;
 }
 //제품목록 띄우기 -> 메뉴로 나가는거 안됨
 void productList() {
 	system("cls");
+	totalProfit();
 	gotoxy(15, 1);
 	cout << "제품 목록 LIST";
 	gotoxy(0, 2);
@@ -85,52 +89,57 @@ void productList() {
 		i++;
 	}
 	//cout << "빠져나왔습니다." << endl;
-	while (true) {
-		if (keyControl() == TAB) {
-			break;
-		}
+	if (keyControl() == TAB) {
+		return;
 	}
 }
 
 //품목추가(원래 없는 제품) -> 마트 -> 대강 OK
+//만약, 있는 제품이라면 존재하는 품목입니다.
 void addProduct() {
 	string productName;	//제품 이름
 	int price;			//제품 가격
+	int customerPrice;
 	int quantity;		//제품 수량
 
 	while (true) {
 		system("cls");
+		totalProfit();
 		gotoxy(33, 2);
 		cout << "<품목 추가>" << endl;
 		gotoxy(10, 4);
 		cout << "※ 추가하고자 하는 품목의 이름, 가격, 수량을 입력하세요 ※" << endl;
 
-		gotoxy(32, 7);
+		gotoxy(30, 7);
 		cout << "제품 이름 : ";
 		cin >> productName;
-		gotoxy(32, 8);
+		gotoxy(30, 8);
 		cout << "제품 가격 : ";
 		cin >> price;
-		gotoxy(32, 9);
+		gotoxy(29, 9);
+		cout << "소비자 가격 : ";
+		cin >> customerPrice;
+		gotoxy(30, 10);
 		cout << "제품 수량 : ";
 		cin >> quantity;
 
-		product[cnt++] = new Product(productName, price, quantity);
+		product[cnt++] = new Product(productName, price, customerPrice, quantity);
 
 		gotoxy(31, 12);
 		cout << "<추가되었습니다>" << endl;
 
 		if (keyControl() == TAB) {
-			break;
+			return;
 		}
 	}
 }
 
-//품목삭제(원래 없는 제품)
+//품목삭제(원래 없는 제품) -> 배열 내 삭제 구현
 void delProduct() {
 	string productName;	//제품 이름
 	while (true) {
 		system("cls");
+		totalProfit();
 		gotoxy(33, 2);
 		cout << "<품목 삭제>" << endl;
 		gotoxy(16, 4);
@@ -156,53 +165,107 @@ void delProduct() {
 		}
 
 		if (keyControl() == TAB) {
-			break;
+			return;
 		}
 	}
 }
 
 //입고(원래 있는 제품에 수량 +)
 void warehousing() {
-	system("cls");
-	cout << "입고됩니다.";
-
-	//product배열에 물품이 있는지 확인
-	//있으면 수량+
-	//없으면 없는 물품입니다. 띄우기
+	string productName;	//제품 이름
+	int quantity;		//제품 수량
+	int check;
 
 	while (true) {
+		system("cls");
+		check = 0;
+		totalProfit();
+		gotoxy(33, 2);
+		cout << "<입고>" << endl;
+		gotoxy(10, 4);
+		cout << "※ 입고하고자 하는 품목의 이름, 수량을 입력하세요 ※" << endl;
+
+		gotoxy(32, 7);
+		cout << "제품 이름 : ";
+		cin >> productName;
+		gotoxy(32, 8);
+		cout << "제품 수량 : ";
+		cin >> quantity;
+
+		//product배열에 물품이 있는지 확인
+		for (int i = 0; i < cnt; i++) {
+			if (product[i]->getProductName() == productName) {
+				product[i]->addQuantity(quantity);
+				gotoxy(31, 12);
+				cout << "입고되었습니다." << endl;
+				check = 1;
+				break;
+			}
+		}
+		if (check != 1) {
+			gotoxy(20, 12);
+			cout<<"존재하지 않는 제품입니다."<<endl;
+			gotoxy(23, 13);
+			cout << "품목을 추가해 주세요." << endl;
+		}
 		if (keyControl() == TAB) {
-			break;
+			return;
 		}
 	}
 }
 
 //출고(원래 있는 제품에 수량 -)
 void release() {
-	system("cls");
-	cout << "출고됩니다.";
-
-	//product배열에 물품이 있는지 확인
-	//있으면 수량 -
-	//없으면 없는 물품입니다. 띄우기
-	//출고가 되는 조건 : 유통기한?, 
-
+	string productName;	//제품 이름
+	int quantity;		//제품 수량
+	int check;
 
 	while (true) {
+		system("cls");
+		check = 0;
+		totalProfit();
+		gotoxy(33, 2);
+		cout << "<출고>" << endl;
+		gotoxy(10, 4);
+		cout << "※ 입고하고자 하는 품목의 이름, 수량을 입력하세요 ※" << endl;
+
+		gotoxy(32, 7);
+		cout << "제품 이름 : ";
+		cin >> productName;
+		gotoxy(32, 8);
+		cout << "제품 수량 : ";
+		cin >> quantity;
+
+		//product배열에 물품이 있는지 확인
+		for (int i = 0; i < cnt; i++) {
+			if (product[i]->getProductName() == productName) {
+				product[i]->disQuantity(quantity);
+				gotoxy(31, 12);
+				cout << "출고되었습니다." << endl;
+				check = 1;
+				break;
+			}
+		}
+		if (check != 1) {
+			gotoxy(20, 12);
+			cout << "존재하지 않는 제품입니다." << endl;
+			gotoxy(23, 13);
+			cout << "품목을 추가해 주세요." << endl;
+		}
 		if (keyControl() == TAB) {
-			break;
+			return;
 		}
 	}
 }
 
-int Managermain() {
+int managerMain() {
 	init();
 
 	while (true) {
-		title();
+		managerTitle();
 
 		//메뉴 선택 -> 함수
-		int select = menu();
+		int select = managerMenu();
 		if (select == 0) productList();
 		else if (select == 1) addProduct();
 		else if (select == 2) delProduct();
@@ -216,67 +279,186 @@ int Managermain() {
 	return 0;
 }
 
+//Cashier
 //구매(품목을 찾아서, 산 수량만큼 -)
-void buy() {
-	system("cls");
-	totalProfit();
-	gotoxy(33, 2);
-	cout << "<구매>" << endl;
-	gotoxy(10, 4);
-	cout << "※ 구매하고자 하는 품목의 이름, 가격, 수량을 입력하세요 ※" << endl;
-
+void addShoppingCart() {
 	string productName;	//제품 이름
-	int price;			//제품 가격
 	int quantity;		//제품 수량
-
-	gotoxy(32, 7);
-	cout << "제품 이름 : ";
-	cin >> productName;
-	gotoxy(32, 8);
-	cout << "제품 가격 : ";
-	cin >> price;
-	gotoxy(32, 9);
-	cout << "제품 수량 : ";
-	cin >> quantity;
-
-	gotoxy(31, 12);
-	cout << "<구매되었습니다>" << endl;
-
-	//고객이 산 제품에 대해 누적합 구하기
-	allSum += price * quantity;
-
-	//product[i].print();
+	int check;
 	while (true) {
+		system("cls");
+		totalProfit();
+		check = 0;
+		gotoxy(33, 2);
+		cout << "<구매>" << endl;
+		gotoxy(10, 4);
+		cout << "※ 구매하고자 하는 품목의 이름, 가격, 수량을 입력하세요 ※" << endl;
+
+		gotoxy(32, 7);
+		cout << "제품 이름 : ";
+		cin >> productName;
+		gotoxy(32, 8);
+		cout << "제품 수량 : ";
+		cin >> quantity;
+
+		//product배열에 물품이 있는지 확인
+		for (int i = 0; i < cnt; i++) {
+			if (product[i]->getProductName() == productName) {
+				product[i]->disQuantity(quantity);
+				gotoxy(31, 12);
+				cout << "구매되었습니다." << endl;
+
+				//고객이 산 제품에 대해 누적합 구하기
+				allSum += product[i]->getCustomerPrice() * quantity;
+				
+				check = 1;
+				break;
+			}
+		}
+
+		if (check != 1) {
+			gotoxy(20, 12);
+			cout << "존재하지 않는 제품입니다." << endl;
+			gotoxy(23, 13);
+			cout << "품목을 추가해 주세요." << endl;
+		}
+
+		//product[i].print();
 		if (keyControl() == TAB) {
-			break;
+			return;
+		}
+	}
+}
+
+//장바구니에 있는 제품 구매 취소
+void delShoppingCart() {
+	string productName;	//제품 이름
+	int quantity;		//제품 수량
+	int check;
+	while (true) {
+		system("cls");
+		totalProfit();
+		check = 0;
+		gotoxy(33, 2);
+		cout << "<구매취소>" << endl;
+		gotoxy(10, 4);
+		cout << "※ 구매를 취소하고자 하는 품목의 이름, 가격, 수량을 입력하세요 ※" << endl;
+
+		gotoxy(32, 7);
+		cout << "제품 이름 : ";
+		cin >> productName;
+		gotoxy(32, 8);
+		cout << "제품 수량 : ";
+		cin >> quantity;
+
+		//product배열에 물품이 있는지 확인
+		for (int i = 0; i < cnt; i++) {
+			if (product[i]->getProductName() == productName) {
+				product[i]->disQuantity(quantity);
+				gotoxy(31, 12);
+				cout << "구매되었습니다." << endl;
+
+				//고객이 산 제품에 대해 누적합 구하기
+				allSum += product[i]->getCustomerPrice() * quantity;
+
+				check = 1;
+				break;
+			}
+		}
+
+		if (check != 1) {
+			gotoxy(20, 12);
+			cout << "존재하지 않는 제품입니다." << endl;
+			gotoxy(23, 13);
+			cout << "품목을 추가해 주세요." << endl;
+		}
+
+		//product[i].print();
+		if (keyControl() == TAB) {
+			return;
 		}
 	}
 }
 
 //환불(품목을 찾아서, 환불할 수량만큼 +)
 void refund() {
-	system("cls");
-	totalProfit();
-	//product[i].print();
+	string productName;	//제품 이름
+	int quantity;		//제품 수량
+	string refundMemo;	//환불사유
+	int check;
 	while (true) {
+		system("cls");
+		totalProfit();
+		check = 0;
+		gotoxy(33, 2);
+		cout << "<환불>" << endl;
+		gotoxy(10, 4);
+		cout << "※ 환불하고자 하는 품목의 이름, 가격, 수량을 입력하세요 ※" << endl;
+
+		gotoxy(32, 7);
+		cout << "제품 이름 : ";
+		cin >> productName;
+		gotoxy(32, 8);
+		cout << "제품 수량 : ";
+		cin >> quantity;
+		gotoxy(32, 9);
+		cout << "환불 사유 : ";
+		cin >> refundMemo;
+
+		//product배열에 물품이 있는지 확인
+		for (int i = 0; i < cnt; i++) {
+			if (product[i]->getProductName() == productName) {
+				product[i]->addQuantity(quantity);
+				gotoxy(31, 12);
+				cout << "환불되었습니다." << endl;
+
+				//고객이 산 제품에 대해 누적합 구하기
+				allSum -= product[i]->getCustomerPrice() * quantity;
+
+				check = 1;
+				break;
+			}
+		}
+
+		if (check != 1) {
+			gotoxy(20, 12);
+			cout << "존재하지 않는 제품입니다." << endl;
+			gotoxy(23, 13);
+			cout << "품목을 추가해 주세요." << endl;
+		}
+
+		//product[i].print();
 		if (keyControl() == TAB) {
-			break;
+			return;
 		}
 	}
 }
 
-int Cashiermain() {
+//구매 리스트
+void cartList() {
+
+}
+
+//구매
+void buy() {
+
+
+}
+
+int cashierMain() {
 	init();
 
 	while (true) {
-		title();
+		cashierTitle();
 
 		//메뉴 선택 -> 함수
-		int select = menu();
+		int select = cashierMenu();
 		if (select == 0) productList();
-		else if (select == 1) buy();
-		else if (select == 2) refund();
-		else if (select == 3) {
+		else if (select == 1) addShoppingCart();
+		else if (select == 2) delShoppingCart();
+		else if (select == 3) buy();
+		else if (select == 4) refund();
+		else if (select == 5) {
 			gotoxy(0, 27); break;
 		}
 		system("cls");
@@ -285,31 +467,53 @@ int Cashiermain() {
 }
 
 
-int login() {
+void login() {
 	init();
-	gotoxy(35, 10);
-	cout << "<Log-in>";
-	string id;
-	string password;
-	gotoxy(31, 12);
-	cout << "아이디 : ";
-	cin >> id;
-	gotoxy(31, 13);
-	cout << "비밀번호 : ";
-	cin >> password;
+	int wrong = 0;
+	while (true) {
+		system("cls");
+		if (wrong != 0) {
+			gotoxy(25, 2);
+			cout << wrong << "회 오류, 5회오류시 종료됩니다." << endl;
+		}
+		gotoxy(35, 10);
+		cout << "<Log-in>";
+		string id;
+		string password;
+		gotoxy(31, 12);
+		cout << "아이디 : ";
+		cin >> id;
+		gotoxy(29, 13);
+		cout << "비밀번호 : ";
+		cin >> password;
 
-	if (id == "manager" && password == "manager01") {
-		//martSystem_Manager.cpp
-		cout << "마트관리" << endl;
+		if (id == "manager" && password == "manager01") {
+			managerMain();
+		}
+		else if (id == "cashier" && password == "cashier01") {
+			cashierMain();
+		}
+		else {
+			gotoxy(25, 15);
+			//잘못된 아이디/비밀번호 입니다.
+			cout << "잘못된 아이디/비밀번호 입니다." << endl;
+			gotoxy(29, 16);
+			cout << "다시 시도해 주세요." << endl;
+			Sleep(1000);
+			wrong++;
+		}
+		
+		if (wrong >= 5) {
+			return;
+		}
 	}
-	else if (id == "cashier" && password == "cashier01") {
-		//martSystem_Cashier.cpp
-		cout << "마트계산" << endl;
-	}
-	else {
-		//잘못된 아이디/비밀번호 입니다.
-		cout << "잘못된 아이디/비밀번호 입니다." << endl;
-	}
+
+	return;
+}
+
+int main() {
+	init();
+	login();
 	return 0;
 }
 
@@ -332,27 +536,6 @@ void gotoxy(int x, int y) {
 	COORD pos = { x, y };
 	SetConsoleCursorPosition(consoleHandle, pos);
 }
-
-//초기화
-void init() {
-	//콘솔 크기 정하기
-	system("mode con cols=80 lines=30");
-
-	//깜빡거리는 커서 숨기기
-	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-	CONSOLE_CURSOR_INFO ConsoleCursor;
-	ConsoleCursor.bVisible = 0;
-	ConsoleCursor.dwSize = 1;
-	SetConsoleCursorInfo(consoleHandle, &ConsoleCursor);
-}
-
-//좌표찍기
-void gotoxy(int x, int y) {
-	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-	COORD pos = { x, y };
-	SetConsoleCursorPosition(consoleHandle, pos);
-}
-
 
 //방향키로 좌표 조절하기
 int keyControl() {
@@ -378,35 +561,40 @@ int keyControl() {
 	}
 }
 //title 출력하기
-void cashierRitle() {
-	gotoxy(10, 2); cout << "------------------------------------------------------------" << endl;
-	gotoxy(16, 5); cout << "##       ##        #        #######     ########" << endl;
-	gotoxy(16, 6); cout << "####   ####      ## ##      ##    ##       ##" << endl;
-	gotoxy(16, 7); cout << "##  ###  ##     ##   ##     #######        ##" << endl;
-	gotoxy(16, 8); cout << "##   #   ##    #########    ##    ##       ##" << endl;
-	gotoxy(16, 9); cout << "##       ##   ##       ##   ##     ##      ##" << endl;
-	gotoxy(16, 10); cout << "##       ##   ##       ##   ##     ##      ##" << endl << endl;
-	gotoxy(10, 13); cout << "------------------------------------------------------------" << endl;
+void cashierTitle() {
+	gotoxy(10, 2); cout << "------------------------------------------------------------";
+	gotoxy(16, 5); cout << "##       ##        #        #######     ########";
+	gotoxy(16, 6); cout << "####   ####      ## ##      ##    ##       ##";
+	gotoxy(16, 7); cout << "##  ###  ##     ##   ##     #######        ##";
+	gotoxy(16, 8); cout << "##   #   ##    #########    ##    ##       ##";
+	gotoxy(16, 9); cout << "##       ##   ##       ##   ##     ##      ##";
+	gotoxy(16, 10); cout << "##       ##   ##       ##   ##     ##      ##";
+	gotoxy(55, 12); cout << "_for cashier";
+	gotoxy(10, 14); cout << "------------------------------------------------------------" << endl;
 }
 
 //메뉴설정
-int cashiermenu() {
-	int x = 36;
+int cashierMenu() {
+	int x = 33;
 	int y = 19;
 
 	//메뉴출력
-	gotoxy(x - 6, y - 1);
-	cout << "---------------------" << endl;
+	gotoxy(x - 5, y - 1);
+	cout << "----------------------" << endl;
 	gotoxy(x - 2, y);
-	cout << "> 제품 목록" << endl;
+	cout << ">    제품 목록" << endl;
 	gotoxy(x, y + 1);
-	cout << " 구   매" << endl;
+	cout << " 장바구니 추가" << endl;
 	gotoxy(x, y + 2);
-	cout << " 환   불" << endl;
+	cout << " 장바구니 삭제" << endl;
 	gotoxy(x, y + 3);
-	cout << " 종   료" << endl;
-	gotoxy(x - 6, y + 4);
-	cout << "---------------------" << endl << endl;
+	cout << "   구     매" << endl;
+	gotoxy(x, y + 4);
+	cout << "   환     불" << endl;
+	gotoxy(x, y + 5);
+	cout << "   종     료" << endl;
+	gotoxy(x - 5, y + 6);
+	cout << "----------------------" << endl << endl;
 
 	//메뉴선택
 	while (true) {
@@ -422,20 +610,20 @@ int cashiermenu() {
 			else if (y == 19) {
 				gotoxy(x - 2, y);
 				cout << " ";
-				y = 22;
+				y = 24;
 				gotoxy(x - 2, y);
 				cout << ">";
 			}
 			break;
 
 		case DOWN:
-			if (y < 22) {
+			if (y < 24) {
 				gotoxy(x - 2, y);
 				cout << " ";
 				gotoxy(x - 2, ++y);
 				cout << ">";
 			}
-			else if (y == 22) {
+			else if (y == 24) {
 				gotoxy(x - 2, y);
 				cout << " ";
 				y = 19;
