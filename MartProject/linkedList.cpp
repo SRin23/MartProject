@@ -29,41 +29,68 @@ int cashierMenu();	//메뉴 출력, 선택
 void managerTitle();	//title 출력하기
 int managerMenu();	//메뉴 출력, 선택
 
-//제품정보
+//-------------------------------------------------------
 class Product {
+private:
 	string productName;	//제품 이름
 	int price;			//제품 가격
 	int customerPrice;	//소비자가격
 	int quantity;		//제품 수량
+	Product* next; //다음 노드를 가리키는 포인터
+	friend class ProductLinkedList; //StringLinkedList의 private원소 접근가능
+};
 
+class ProductLinkedList {
+private:
+	Product* head;
 public:
-	Product() {
-		productName = "";
-		price = 0;
-		customerPrice = 0;
-		quantity = 0;
+	ProductLinkedList() : head(NULL) {} //즉 head==NULL이면 빈 리스트라는 것을 의미한다.
+	~ProductLinkedList() {
+		while (empty()) { //연결리스트를 모두 삭제한다(남아있는 연결리스트를 모두 삭제하는 코드)
+			removeFront();
+		}
+	}	
+
+	//리스트가 비었는지 확인하는 함수
+	bool empty() const {
+		return (head != NULL);	//만약, head 즉 리스트가 null이 아니면 true
+	} 
+
+	//첫번째 원소 return
+	const string& front()const {
+		return head->productName;
+	} 
+	//맨앞에 원소 추가
+	void addFront(string productName, int price, int customerPrice, int quantity) { //e는 새로 넣을 값(넣고자 하는 값)
+		Product* pro = new Product; //1. 동적할당으로  새로운 노드 생성
+		pro->productName= productName;  //새로운 노드에 값 넣기
+		pro->price = price; 
+		pro->customerPrice = customerPrice;  
+		pro->quantity = quantity; 
+
+		head->next = pro; //2. 새로 만든 노드가 head값을 가리키도록 함
+		head = pro; //3. head가 새로 만든 노드를 가리키도록 함
 	}
-	Product(string productName, int price, int customerPrice, int quantity) :productName(productName), price(price), customerPrice(customerPrice), quantity(quantity) {};
-	~Product() {}
-	void print() {
-		cout << "제품이름 : " << productName << endl;
-		cout << "제품가격 : " << price << endl;
-		cout << "소비자가격 : " << customerPrice << endl;
-		cout << "제품수량 : " << quantity << endl;
-		cout << "합계 : " << price * quantity << endl;
+	//맨앞요소 제거
+	void removeFront() {
+		Product* old = head; //1. head의 값을 임시변수 old에 저장(첫번째 노드를 가리키는 old변수 생성)
+		head = old->next; //2. head의 값을 old의 다음 노드로 변경(head가 두번째 노드를 가리키도록 함)
+		delete old; //3. old삭제
 	}
 
 	//getter
-	string getProductName() { return this->productName; }
-	int getPrice() { return this->price; }
-	int getCustomerPrice() { return this->customerPrice; }
-	int getQuantity() { return this->quantity; }
+	string getProductName() { return head->productName; }
+	int getPrice() { return head->price; }
+	int getCustomerPrice() { return head->customerPrice; }
+	int getQuantity() { return head->quantity; }
 
 	//수량 +/-
-	void addQuantity(int quantity) { this->quantity += quantity; }
-	void disQuantity(int quantity) { this->quantity -= quantity; }
-
+	void addQuantity(int quantity) { head->quantity += quantity; }
+	void disQuantity(int quantity) { head->quantity -= quantity; }
 };
+
+//-------------------------------------------------------
+
 
 //전역멤버변수
 int allSum = 0;
@@ -80,21 +107,15 @@ void totalProfit() {
 void productList() {
 	system("cls");
 	totalProfit();
-	gotoxy(15, 3);
+	gotoxy(15, 1);
 	cout << "제품 목록 LIST";
-	gotoxy(0, 4);
+	gotoxy(0, 2);
 	cout << " -----------------------------------------" << endl;
-	int i = -1;
+	int i = 0;
 	while (i < cnt) {	//i<제품개수
+		cout << " | " << i + 1 << " | 제품명 : " << product[i]->getProductName() << "\t | 수량 : " << product[i]->getQuantity() << "\t |" << endl;
+		cout << " -----------------------------------------" << endl;
 		i++;
-		if (product[i] != nullptr) {
-			cout << " | " << i + 1 << " | 제품명 : " << product[i]->getProductName() << "\t | 수량 : " << product[i]->getQuantity() << "\t |" << endl;
-			cout << " -----------------------------------------" << endl;
-		}
-		else {
-			continue;
-		}
-		
 	}
 	//cout << "빠져나왔습니다." << endl;
 	if (keyControl() == TAB) {
@@ -124,7 +145,7 @@ void addProduct() {
 		gotoxy(30, 8);
 		cout << "제품 가격 : ";
 		cin >> price;
-		gotoxy(28, 9);
+		gotoxy(29, 9);
 		cout << "소비자 가격 : ";
 		cin >> customerPrice;
 		gotoxy(30, 10);
@@ -212,7 +233,7 @@ void warehousing() {
 		}
 		if (check != 1) {
 			gotoxy(20, 12);
-			cout<<"존재하지 않는 제품입니다."<<endl;
+			cout << "존재하지 않는 제품입니다." << endl;
 			gotoxy(23, 13);
 			cout << "품목을 추가해 주세요." << endl;
 		}
@@ -288,10 +309,6 @@ int managerMain() {
 }
 
 //Cashier
-Product *buyProduct[10];
-int buyCnt = 0;
-int customerTotal = 0;
-
 //구매(품목을 찾아서, 산 수량만큼 -)
 void addShoppingCart() {
 	string productName;	//제품 이름
@@ -320,11 +337,9 @@ void addShoppingCart() {
 				gotoxy(31, 12);
 				cout << "구매되었습니다." << endl;
 
-				buyProduct[buyCnt++] = new Product(product[i]->getProductName(), product[i]->getPrice(), product[i]->getCustomerPrice(), product[i]->getQuantity());
 				//고객이 산 제품에 대해 누적합 구하기
 				allSum += product[i]->getCustomerPrice() * quantity;
-				customerTotal += buyProduct[i]->getCustomerPrice() * quantity;
-				
+
 				check = 1;
 				break;
 			}
@@ -450,38 +465,13 @@ void refund() {
 
 //구매 리스트
 void cartList() {
-	system("cls");
-	totalProfit();
-	gotoxy(15, 3);
-	cout << "구매 목록 LIST";
-	gotoxy(0, 4);
-	cout << " --------------------------------------------------------- " << endl;
-	int i = -1;
-	while (i < buyCnt) {	//i<제품개수
-		i++;
-		if (buyProduct[i] != nullptr) {
-			cout << " | " << i + 1 << " | 제품명 : " << buyProduct[i]->getProductName() << "\t | 수량 : " << buyProduct[i]->getQuantity() << "\t | 가격 : " << buyProduct[i]->getCustomerPrice() << "\t |" << endl;
-			cout << " --------------------------------------------------------- " << endl;
-		}
-		else {
-			continue;
-		}
 
-	}
-	cout << " | - | 전체 합계 : " << customerTotal <<"\t\t\t\t         |" << endl;
-	cout << " --------------------------------------------------------- " << endl;
-	//cout << "빠져나왔습니다." << endl;
 }
 
 //구매
 void buy() {
-	system("cls");
-	cartList();
-	cout << endl << endl << "구매하시겠습니까?" << endl;
-	cout << "구매되었습니다." << endl;
-	if (keyControl() == TAB) {
-		return;
-	}
+
+
 }
 
 int cashierMain() {
@@ -528,11 +518,9 @@ void login() {
 
 		if (id == "manager" && password == "manager01") {
 			managerMain();
-			continue;
 		}
 		else if (id == "cashier" && password == "cashier01") {
 			cashierMain();
-			continue;
 		}
 		else {
 			gotoxy(25, 15);
@@ -543,7 +531,7 @@ void login() {
 			Sleep(1000);
 			wrong++;
 		}
-		
+
 		if (wrong >= 5) {
 			return;
 		}
@@ -729,20 +717,20 @@ int managerMenu() {
 			else if (y == 17) {	//맨 위 -> 맨 아래로 이동
 				gotoxy(x - 2, y);
 				cout << " ";
-				y = 22;
+				y = 24;
 				gotoxy(x - 2, y);
 				cout << ">";
 			}
 			break;
 
 		case DOWN:	//↓를 눌렸을 경우
-			if (y < 22) {	//y는 17~24사이만 이동 -> 24보다 작아야함
+			if (y < 24) {	//y는 17~24사이만 이동 -> 24보다 작아야함
 				gotoxy(x - 2, y);
 				cout << " ";
 				gotoxy(x - 2, ++y);	//아래쪽으로 1칸 이동후
 				cout << ">";
 			}
-			else if (y == 22) {	//맨 아래 -> 맨 위로 이동
+			else if (y == 24) {	//맨 아래 -> 맨 위로 이동
 				gotoxy(x - 2, y);
 				cout << " ";
 				y = 17;
