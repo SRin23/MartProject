@@ -30,6 +30,7 @@ void managerTitle();	//title 출력하기
 int managerMenu();	//메뉴 출력, 선택
 
 //-------------------------------------------------------
+/*
 class Product {
 private:
 	string productName;	//제품 이름
@@ -88,14 +89,54 @@ public:
 	void addQuantity(int quantity) { head->quantity += quantity; }
 	void disQuantity(int quantity) { head->quantity -= quantity; }
 };
+*/
+
+struct Product {
+	string productName;	//제품 이름
+	int price;			//제품 가격
+	int customerPrice;	//소비자가격
+	int quantity;		//제품 수량
+
+public:
+	Product() {
+		productName = "";
+		price = 0;
+		customerPrice = 0;
+		quantity = 0;
+	}
+	Product(string productName, int price, int customerPrice, int quantity) :productName(productName), price(price), customerPrice(customerPrice), quantity(quantity) {};
+	~Product() {}
+	void print() {
+		cout << "제품이름 : " << productName << endl;
+		cout << "제품가격 : " << price << endl;
+		cout << "소비자가격 : " << customerPrice << endl;
+		cout << "제품수량 : " << quantity << endl;
+		cout << "합계 : " << price * quantity << endl;
+	}
+
+	//getter
+	string getProductName() { return this->productName; }
+	int getPrice() { return this->price; }
+	int getCustomerPrice() { return this->customerPrice; }
+	int getQuantity() { return this->quantity; }
+
+	//수량 +/-
+	void addQuantity(int quantity) { this->quantity += quantity; }
+	void disQuantity(int quantity) { this->quantity -= quantity; }
+
+};
+
+typedef struct _ProductListNode {
+	Product* product;
+	struct _ProductListNode* productListNode;
+};
 
 //-------------------------------------------------------
 
 
 //전역멤버변수
 int allSum = 0;
-Product* product[10];
-int cnt = 0;
+int gloval_cnt = 0;
 
 //Manager
 //누적 수익 -> 소비자들의 구매로 인한 수익 -> 항상 맨위에?
@@ -112,7 +153,7 @@ void productList() {
 	gotoxy(0, 2);
 	cout << " -----------------------------------------" << endl;
 	int i = 0;
-	while (i < cnt) {	//i<제품개수
+	while (i < gloval_cnt) {	//i<제품개수
 		cout << " | " << i + 1 << " | 제품명 : " << product[i]->getProductName() << "\t | 수량 : " << product[i]->getQuantity() << "\t |" << endl;
 		cout << " -----------------------------------------" << endl;
 		i++;
@@ -152,7 +193,7 @@ void addProduct() {
 		cout << "제품 수량 : ";
 		cin >> quantity;
 
-		product[cnt++] = new Product(productName, price, customerPrice, quantity);
+		product[gloval_cnt++] = new Product(productName, price, customerPrice, quantity);
 
 		gotoxy(31, 12);
 		cout << "<추가되었습니다>" << endl;
@@ -222,7 +263,7 @@ void warehousing() {
 		cin >> quantity;
 
 		//product배열에 물품이 있는지 확인
-		for (int i = 0; i < cnt; i++) {
+		for (int i = 0; i < gloval_cnt; i++) {
 			if (product[i]->getProductName() == productName) {
 				product[i]->addQuantity(quantity);
 				gotoxy(31, 12);
@@ -266,7 +307,7 @@ void release() {
 		cin >> quantity;
 
 		//product배열에 물품이 있는지 확인
-		for (int i = 0; i < cnt; i++) {
+		for (int i = 0; i < gloval_cnt; i++) {
 			if (product[i]->getProductName() == productName) {
 				product[i]->disQuantity(quantity);
 				gotoxy(31, 12);
@@ -331,7 +372,7 @@ void addShoppingCart() {
 		cin >> quantity;
 
 		//product배열에 물품이 있는지 확인
-		for (int i = 0; i < cnt; i++) {
+		for (int i = 0; i < gloval_cnt; i++) {
 			if (product[i]->getProductName() == productName) {
 				product[i]->disQuantity(quantity);
 				gotoxy(31, 12);
@@ -381,7 +422,7 @@ void delShoppingCart() {
 		cin >> quantity;
 
 		//product배열에 물품이 있는지 확인
-		for (int i = 0; i < cnt; i++) {
+		for (int i = 0; i < gloval_cnt; i++) {
 			if (product[i]->getProductName() == productName) {
 				product[i]->disQuantity(quantity);
 				gotoxy(31, 12);
@@ -435,7 +476,7 @@ void refund() {
 		cin >> refundMemo;
 
 		//product배열에 물품이 있는지 확인
-		for (int i = 0; i < cnt; i++) {
+		for (int i = 0; i < gloval_cnt; i++) {
 			if (product[i]->getProductName() == productName) {
 				product[i]->addQuantity(quantity);
 				gotoxy(31, 12);

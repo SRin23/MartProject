@@ -70,7 +70,6 @@ int allSum = 0;
 Product* product[10];
 int cnt = 0;
 
-//Manager
 //누적 수익 -> 소비자들의 구매로 인한 수익 -> 항상 맨위에?
 void totalProfit() {
 	gotoxy(0, 0);
@@ -102,6 +101,7 @@ void productList() {
 	}
 }
 
+//Manager
 //품목추가(원래 없는 제품) -> 마트 -> 대강 OK
 //만약, 있는 제품이라면 존재하는 품목입니다.
 void addProduct() {
