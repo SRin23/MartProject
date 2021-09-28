@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util.h"
 #include "Product.h"
 
 #ifndef Cashier_h
@@ -7,7 +8,6 @@
 
 class Cashier {
 private:
-	int allSum;
 	Product* product[10];
 	int cnt;
 

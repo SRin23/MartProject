@@ -1,8 +1,3 @@
-#include<iostream>
-#include<cstdio>
-#include<conio.h>	//getch사용
-#include<windows.h>	//좌표사용
-#include <string>
 #include "Cashier.h"
 
 using namespace std;

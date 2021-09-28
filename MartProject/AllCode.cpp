@@ -68,33 +68,34 @@ public:
 //전역멤버변수
 int allSum = 0;
 Product* product[10];
-int cnt = 0;
+int cnt = -1;
 
-//누적 수익 -> 소비자들의 구매로 인한 수익 -> 항상 맨위에?
-void totalProfit() {
-	gotoxy(0, 0);
-	cout << "누적수익 : " << allSum << endl;
-}
+
 //제품목록 띄우기 -> 메뉴로 나가는거 안됨
 void productList() {
 	system("cls");
-	totalProfit();
 	gotoxy(15, 3);
 	cout << "제품 목록 LIST";
 	gotoxy(0, 4);
 	cout << " -----------------------------------------" << endl;
 	int i = -1;
-	while (i < cnt) {	//i<제품개수
-		i++;
-		if (product[i] != nullptr) {
-			cout << " | " << i + 1 << " | 제품명 : " << product[i]->getProductName() << "\t | 수량 : " << product[i]->getQuantity() << "\t |" << endl;
-			cout << " -----------------------------------------" << endl;
-		}
-		else {
-			continue;
-		}
-		
+	if (cnt < 0) {
+		gotoxy(10, 5);
+		cout << "제품의 재고가 없습니다." << endl;
 	}
+	else {
+		while (i < cnt) {	//i<제품개수
+			i++;
+			if (product[i] != nullptr) {
+				cout << " | " << i + 1 << " | 제품명 : " << product[i]->getProductName() << "\t | 수량 : " << product[i]->getQuantity() << "\t |" << endl;
+				cout << " -----------------------------------------" << endl;
+			}
+			else {
+				continue;
+			}
+		}
+	}
+	
 	//cout << "빠져나왔습니다." << endl;
 	if (keyControl() == TAB) {
 		return;
@@ -112,7 +113,6 @@ void addProduct() {
 
 	while (true) {
 		system("cls");
-		totalProfit();
 		gotoxy(33, 2);
 		cout << "<품목 추가>" << endl;
 		gotoxy(10, 4);
@@ -130,8 +130,8 @@ void addProduct() {
 		gotoxy(30, 10);
 		cout << "제품 수량 : ";
 		cin >> quantity;
-
-		product[cnt++] = new Product(productName, price, customerPrice, quantity);
+		cnt++;
+		product[cnt] = new Product(productName, price, customerPrice, quantity);
 
 		gotoxy(31, 12);
 		cout << "<추가되었습니다>" << endl;
@@ -147,13 +147,12 @@ void delProduct() {
 	string productName;	//제품 이름
 	while (true) {
 		system("cls");
-		totalProfit();
 		gotoxy(33, 2);
 		cout << "<품목 삭제>" << endl;
 		gotoxy(16, 4);
 		cout << "※ 삭제하고자 하는 품목의 이름을 입력하세요 ※" << endl;
 
-		gotoxy(32, 7);
+		gotoxy(27, 7);
 		cout << "제품 이름 : ";
 		cin >> productName;
 
@@ -164,6 +163,7 @@ void delProduct() {
 				gotoxy(31, 12);
 				cout << "<삭제되었습니다>" << endl;
 				check = 1;
+				cnt--;
 				break;
 			}
 		}
@@ -187,10 +187,9 @@ void warehousing() {
 	while (true) {
 		system("cls");
 		check = 0;
-		totalProfit();
 		gotoxy(33, 2);
 		cout << "<입고>" << endl;
-		gotoxy(10, 4);
+		gotoxy(16, 4);
 		cout << "※ 입고하고자 하는 품목의 이름, 수량을 입력하세요 ※" << endl;
 
 		gotoxy(32, 7);
@@ -231,11 +230,10 @@ void release() {
 	while (true) {
 		system("cls");
 		check = 0;
-		totalProfit();
 		gotoxy(33, 2);
 		cout << "<출고>" << endl;
-		gotoxy(10, 4);
-		cout << "※ 입고하고자 하는 품목의 이름, 수량을 입력하세요 ※" << endl;
+		gotoxy(16, 4);
+		cout << "※ 출고하고자 하는 품목의 이름, 수량을 입력하세요 ※" << endl;
 
 		gotoxy(32, 7);
 		cout << "제품 이름 : ";
@@ -291,6 +289,12 @@ int managerMain() {
 Product *buyProduct[10];
 int buyCnt = 0;
 int customerTotal = 0;
+
+//누적 수익 -> 소비자들의 구매로 인한 수익 -> 항상 맨위에?
+void totalProfit() {
+	gotoxy(0, 0);
+	cout << "누적수익 : " << customerTotal << endl;
+}
 
 //구매(품목을 찾아서, 산 수량만큼 -)
 void addShoppingCart() {
@@ -457,6 +461,10 @@ void cartList() {
 	gotoxy(0, 4);
 	cout << " --------------------------------------------------------- " << endl;
 	int i = -1;
+	if (buyCnt < 0) {
+		gotoxy(10, 5);
+		cout << "장바구니에 아무것도 없습니다." << endl;
+	}
 	while (i < buyCnt) {	//i<제품개수
 		i++;
 		if (buyProduct[i] != nullptr) {
@@ -621,7 +629,7 @@ int cashierMenu() {
 
 	//메뉴출력
 	gotoxy(x - 5, y - 1);
-	cout << "----------------------" << endl;
+	cout << "-------------------------" << endl;
 	gotoxy(x - 2, y);
 	cout << ">    제품 목록" << endl;
 	gotoxy(x, y + 1);
@@ -635,7 +643,7 @@ int cashierMenu() {
 	gotoxy(x, y + 5);
 	cout << "   종     료" << endl;
 	gotoxy(x - 5, y + 6);
-	cout << "----------------------" << endl << endl;
+	cout << "-------------------------" << endl << endl;
 
 	//메뉴선택
 	while (true) {

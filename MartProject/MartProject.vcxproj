@@ -19,20 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Cashier.cpp" />
-    <ClCompile Include="login.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Manager.cpp" />
-    <ClCompile Include="Product.cpp" />
-    <ClCompile Include="util.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Cashier.h" />
-    <ClInclude Include="login.h" />
-    <ClInclude Include="main.h" />
-    <ClInclude Include="Manager.h" />
-    <ClInclude Include="Product.h" />
-    <ClInclude Include="util.h" />
+    <ClCompile Include="AllCode.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

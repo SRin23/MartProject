@@ -15,43 +15,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Manager.cpp">
+    <ClCompile Include="AllCode.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Cashier.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="util.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="login.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Product.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Manager.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Cashier.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="main.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="util.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Product.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="login.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
