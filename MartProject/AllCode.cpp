@@ -18,6 +18,7 @@
 #define RIGHT 3
 #define ENTER 4	//ENTER키 : t선택
 #define TAB 5	//TAB키 : Main으로 빠져나오기
+#define ESC 6	//프로그램 종료
 
 using namespace std;
 
@@ -325,8 +326,6 @@ void addShoppingCart() {
 				cout << "구매되었습니다." << endl;
 
 				buyProduct[buyCnt++] = new Product(product[i]->getProductName(), product[i]->getPrice(), product[i]->getCustomerPrice(), product[i]->getQuantity());
-				//고객이 산 제품에 대해 누적합 구하기
-				allSum += product[i]->getCustomerPrice() * quantity;
 				customerTotal += buyProduct[i]->getCustomerPrice() * quantity;
 				
 				check = 1;
@@ -370,14 +369,14 @@ void delShoppingCart() {
 		cin >> quantity;
 
 		//product배열에 물품이 있는지 확인
-		for (int i = 0; i < cnt; i++) {
-			if (product[i]->getProductName() == productName) {
-				product[i]->disQuantity(quantity);
+		for (int i = 0; i < buyCnt; i++) {
+			if (buyProduct[i]->getProductName() == productName) {
+				buyProduct[i]->disQuantity(quantity);
 				gotoxy(31, 12);
-				cout << "구매되었습니다." << endl;
+				cout << "구매취소되었습니다." << endl;
 
-				//고객이 산 제품에 대해 누적합 구하기
-				allSum += product[i]->getCustomerPrice() * quantity;
+				delete buyProduct[i];
+				buyCnt--;
 
 				check = 1;
 				break;
@@ -476,7 +475,7 @@ void cartList() {
 		}
 
 	}
-	cout << " | - | 전체 합계 : " << customerTotal <<"\t\t\t\t         |" << endl;
+	cout << " | 전체 합계 : " << customerTotal <<"\t\t\t         |" << endl;
 	cout << " --------------------------------------------------------- " << endl;
 	//cout << "빠져나왔습니다." << endl;
 }
@@ -486,7 +485,30 @@ void buy() {
 	system("cls");
 	cartList();
 	cout << endl << endl << "구매하시겠습니까?" << endl;
-	cout << "구매되었습니다." << endl;
+
+	//메뉴출력
+	char* choice;
+	cout << "YES or NO : ";
+	cin >> choice;
+	for (int i = 0; i < strlen(choice); i++) {
+		choice[i] = tolower(choice[i]);
+	}
+	if (choice == "yes") {
+		cout << "구매되었습니다." << endl;
+		for (int i = 0; i < buyCnt; i++) {
+			allSum += buyProduct[i]->getCustomerPrice() * buyProduct[i]->getQuantity();
+		}
+		
+		delete buyProduct;
+	}
+	else if (choice == "no") {
+		cout << "구매가 취소되었습니디." << endl;
+		delete buyProduct;
+	}
+	else {
+		cout << "옳지 않은 형식의 값입니다." << endl;
+	}
+	
 	if (keyControl() == TAB) {
 		return;
 	}
@@ -607,6 +629,9 @@ int keyControl() {
 	}
 	if (tmp == 9) {		//tab
 		return TAB;
+	}
+	if (tmp == 27) {
+		return ESC;
 	}
 }
 //title 출력하기
