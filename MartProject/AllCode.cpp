@@ -8,7 +8,7 @@
 #include<cstdio>
 #include<conio.h>	//getch사용
 #include<windows.h>	//좌표사용
-#include <string>
+#include <string.h>
 
 
 //방향키 및 키값 정의
@@ -131,12 +131,26 @@ void addProduct() {
 		gotoxy(30, 10);
 		cout << "제품 수량 : ";
 		cin >> quantity;
+		
+
+		/*for (int i = 0; i < cnt; i++) {
+			if (productName == product[i]->getProductName()) {
+				cout << "같은 품목이 존재합니다. 입고창으로 넘어가 주세요.";
+			}
+			else {
+				cnt++;
+				product[cnt] = new Product(productName, price, customerPrice, quantity);
+				gotoxy(31, 12);
+				cout << "<추가되었습니다>" << endl;
+
+			}
+		}*/
 		cnt++;
 		product[cnt] = new Product(productName, price, customerPrice, quantity);
-
 		gotoxy(31, 12);
 		cout << "<추가되었습니다>" << endl;
 
+		
 		if (keyControl() == TAB) {
 			return;
 		}
@@ -307,9 +321,9 @@ void addShoppingCart() {
 		totalProfit();
 		check = 0;
 		gotoxy(33, 2);
-		cout << "<구매>" << endl;
+		cout << "<장바구니 담기>" << endl;
 		gotoxy(10, 4);
-		cout << "※ 구매하고자 하는 품목의 이름, 가격, 수량을 입력하세요 ※" << endl;
+		cout << "※ 장바구니에 담고자 하는 품목의 이름, 가격, 수량을 입력하세요 ※" << endl;
 
 		gotoxy(32, 7);
 		cout << "제품 이름 : ";
@@ -323,7 +337,7 @@ void addShoppingCart() {
 			if (product[i]->getProductName() == productName) {
 				product[i]->disQuantity(quantity);
 				gotoxy(31, 12);
-				cout << "구매되었습니다." << endl;
+				cout << "장바구니에 추가 되었습니다." << endl;
 
 				buyProduct[buyCnt++] = new Product(product[i]->getProductName(), product[i]->getPrice(), product[i]->getCustomerPrice(), product[i]->getQuantity());
 				customerTotal += buyProduct[i]->getCustomerPrice() * quantity;
@@ -357,9 +371,9 @@ void delShoppingCart() {
 		totalProfit();
 		check = 0;
 		gotoxy(33, 2);
-		cout << "<구매취소>" << endl;
+		cout << "<장바구니 삭제>" << endl;
 		gotoxy(10, 4);
-		cout << "※ 구매를 취소하고자 하는 품목의 이름, 가격, 수량을 입력하세요 ※" << endl;
+		cout << "※ 장바구니에서 삭제하고자 하는 품목의 이름, 가격, 수량을 입력하세요 ※" << endl;
 
 		gotoxy(32, 7);
 		cout << "제품 이름 : ";
@@ -373,7 +387,7 @@ void delShoppingCart() {
 			if (buyProduct[i]->getProductName() == productName) {
 				buyProduct[i]->disQuantity(quantity);
 				gotoxy(31, 12);
-				cout << "구매취소되었습니다." << endl;
+				cout << "장바구니에서 삭제 되었습니다." << endl;
 
 				delete buyProduct[i];
 				buyCnt--;
@@ -485,9 +499,10 @@ void buy() {
 	system("cls");
 	cartList();
 	cout << endl << endl << "구매하시겠습니까?" << endl;
-
+	
+	/*char* choice = 0;
 	//메뉴출력
-	char* choice;
+	char* choice = 0;
 	cout << "YES or NO : ";
 	cin >> choice;
 	for (int i = 0; i < strlen(choice); i++) {
@@ -498,17 +513,15 @@ void buy() {
 		for (int i = 0; i < buyCnt; i++) {
 			allSum += buyProduct[i]->getCustomerPrice() * buyProduct[i]->getQuantity();
 		}
-		
-		delete buyProduct;
 	}
 	else if (choice == "no") {
 		cout << "구매가 취소되었습니디." << endl;
-		delete buyProduct;
 	}
 	else {
 		cout << "옳지 않은 형식의 값입니다." << endl;
 	}
-	
+	*/
+	cout << "구매되었습니다." << endl;
 	if (keyControl() == TAB) {
 		return;
 	}

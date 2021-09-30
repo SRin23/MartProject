@@ -15,7 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cppdatabaseTest.cpp">
+    <ClCompile Include="AllCode_DB.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="MySQL_conn_test.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="mysql_login.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
