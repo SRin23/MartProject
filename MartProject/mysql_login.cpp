@@ -6,7 +6,7 @@
 #pragma comment(lib, "libmySQL.lib")
 #define DB_HOST "localhost"	//호스트 이름 또는 IP 주소(기본 : localhost)
 #define DB_USER "root" //MySQL login id(mysql -u 여기쓰는것 -p)
-#define DB_PASS "#"	//패스워드
+#define DB_PASS "mirim"	//패스워드
 #define DB_NAME "cpptest_db"	//데이터베이스 이름
 #define CHOP(x) x[strlen(x)-1] = ' '
 

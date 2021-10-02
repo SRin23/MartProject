@@ -20,8 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AllCode_DB.cpp" />
-    <ClCompile Include="MySQL_conn_test.cpp" />
-    <ClCompile Include="mysql_login.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

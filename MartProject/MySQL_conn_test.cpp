@@ -8,7 +8,7 @@ void main() {
 	//printf("MySQL client Version : %s\n", mysql_get_client_info);
 	MYSQL mysql;
 	mysql_init(&mysql);
-	if (!mysql_real_connect(&mysql, "localhost", "root", "#", "cpptest_db", 3306, NULL, 0)) {
+	if (!mysql_real_connect(&mysql, "localhost", "root", "mirim", "cpptest_db", 3306, NULL, 0)) {
 		printf("error");
 	}
 	else

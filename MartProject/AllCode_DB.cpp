@@ -20,7 +20,7 @@
 #pragma comment(lib, "libmySQL.lib")
 #define DB_HOST "localhost"	//호스트 이름 또는 IP 주소(기본 : localhost)
 #define DB_USER "root" //MySQL login id(mysql -u 여기쓰는것 -p)
-#define DB_PASS "#"	//패스워드
+#define DB_PASS "mirim"	//패스워드
 #define DB_NAME "martsystem_db"	//데이터베이스 이름
 #define CHOP(x) x[strlen(x)-1] = ' '
 
@@ -48,10 +48,10 @@ int insertQuery() {
 	if (connection == NULL) {
 		//fprintf -> stderr는 모니터에 에러 메세지를 보여주는 코드(원래는 파일에 작성하는 코드)
 		//mysql_error로 인해 mysql에서 보내는 error를 바로 볼 수 있다.
-		fprintf(stderr, "Mysql connection error : %s", mysql_error(&conn));
+		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
 		return 1;
 	}
-	//값을 받음
+
 	printf("제품명 : ");
 	fgets(productName, 30, stdin);
 	//입력받은 문자열의 끝 부분 공백을 지워서 그 결과를 돌려주는 역할
@@ -71,10 +71,10 @@ int insertQuery() {
 
 	//db에서 작성
 	//sprint : query에 "insert into login values ('%s', '%s')", name, passwor문장을 저장
-	sprintf(query, "insert into product values ('%s', '%d', '%d', '%d')", productName, stoi(productPrice), stoi(customerPrice), stoi(quantity));
+	sprintf(query, "insert into product (productName, productPrice, customerPrice, quantity) values ('%s', '%d', '%d', '%d')", productName, stoi(productPrice), stoi(customerPrice), stoi(quantity));
 	query_stat = mysql_query(connection, query);
 	if (query_stat != 0) {
-		fprintf(stderr, "Mysql query error : %s", mysql_error(&conn));
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
 		return 1;
 	}
 
@@ -87,12 +87,6 @@ int selectQuary() {
 	MYSQL_RES* sql_result;
 	MYSQL_ROW sql_row;
 	int query_stat;
-	char productName[30];
-	char productPrice[10];
-	char customerPrice[10];
-	char quantity[10];
-	char query[255];
-
 	mysql_init(&conn);
 
 	//Mysql 데이터베이스 엔진으로 연결 시도.
@@ -103,7 +97,7 @@ int selectQuary() {
 	if (connection == NULL) {
 		//fprintf -> stderr는 모니터에 에러 메세지를 보여주는 코드(원래는 파일에 작성하는 코드)
 		//mysql_error로 인해 mysql에서 보내는 error를 바로 볼 수 있다.
-		fprintf(stderr, "Mysql connection error : %s", mysql_error(&conn));
+		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
 		return 1;
 	}
 
@@ -111,18 +105,18 @@ int selectQuary() {
 	//select문 => 콘솔창에 출력
 	query_stat = mysql_query(connection, "select * from product");
 	if (query_stat != 0) {
-		fprintf(stderr, "Mysql query error : %s", mysql_error(&conn));
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
 		return 1;
 	}
 
 	//mysql에 나온 결과를 저장한다.(전체로)
 	sql_result = mysql_store_result(connection);
 
-	printf("| %-10s | %8s | %8s| %8s |\n", "제품명", "제품가격", "소비자가격", "수량");
+	printf("| %3s | %-10s | %8s | %8s| %8s |\n", "ID", "제품명", "제품가격", "소비자가격", "수량");
 
 	//나온 결과를 한줄씩 불러와 단어 하나하나로 나눈다. 값이 없으면 0, 있으면 포인터값 ->> 각단어를 배열로 저장
 	while ((sql_row = mysql_fetch_row(sql_result)) != NULL) {
-		printf("| %-10s | %8d | %9d | %8d |\n", sql_row[0], stoi(sql_row[1]), stoi(sql_row[2]), stoi(sql_row[3]));	//출력
+		printf("| %3d | %-10s | %8d | %9d | %8d |\n", stoi(sql_row[0]), sql_row[1], stoi(sql_row[2]), stoi(sql_row[3]), stoi(sql_row[4]));	//출력
 	}
 	if (sql_result == NULL){
 	cout << "Empty!!" << endl;
@@ -133,6 +127,7 @@ int selectQuary() {
 }
 
 int main() {
+	selectQuary();
 	insertQuery();
 
 	selectQuary();

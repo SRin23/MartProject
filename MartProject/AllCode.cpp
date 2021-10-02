@@ -17,7 +17,7 @@
 #define LEFT 2
 #define RIGHT 3
 #define ENTER 4	//ENTER키 : t선택
-#define TAB 5	//TAB키 : Main으로 빠져나오기
+#define TAB 5	//TAB키 : Main으로 빠져나오기ma
 #define ESC 6	//프로그램 종료
 
 using namespace std;
