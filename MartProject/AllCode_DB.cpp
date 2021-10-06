@@ -25,18 +25,27 @@
 #define CHOP(x) x[strlen(x)-1] = ' '
 
 using namespace std;
+int autoCount = 0;
+
+void init();	//초기화
+void gotoxy(int x, int y);	//좌표찍기
+int keyControl();	//방향키로 좌표 조절하기
+void managerTitle();	//title 출력하기
+int managerMenu();	//메뉴 출력, 선택
+
+
+MYSQL* connection = NULL, conn;
+int query_stat;
+char query[255];
+
 
 //품목 추가
 int insertQuery() {
-	MYSQL* connection = NULL, conn;
-	MYSQL_RES* sql_result;
-	MYSQL_ROW sql_row;
-	int query_stat;
+	system("cls");
 	char productName[30];
 	char productPrice[10];
 	char customerPrice[10];
 	char quantity[10];
-	char query[255];
 
 	mysql_init(&conn);
 
@@ -82,39 +91,30 @@ int insertQuery() {
 }
 
 //품목 리스트
-int selectQuary() {
-	MYSQL* connection = NULL, conn;
+int selectQuery() {
+	system("cls");
 	MYSQL_RES* sql_result;
 	MYSQL_ROW sql_row;
-	int query_stat;
+
 	mysql_init(&conn);
 
-	//Mysql 데이터베이스 엔진으로 연결 시도.
 	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
 	mysql_set_character_set(connection, "euckr");
-	//C++과 mysql이 연동되지 않았을 경우 에러메세지
-	//con성공 : MYSQL* 연결 핸들 (= 첫 번째 파라미터)/실패: NULL
 	if (connection == NULL) {
-		//fprintf -> stderr는 모니터에 에러 메세지를 보여주는 코드(원래는 파일에 작성하는 코드)
-		//mysql_error로 인해 mysql에서 보내는 error를 바로 볼 수 있다.
 		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
 		return 1;
 	}
 
-	//mysql_query함수 : mysql콘솔창에 쓰는 명령어를 입력하는 함수
-	//select문 => 콘솔창에 출력
 	query_stat = mysql_query(connection, "select * from product");
 	if (query_stat != 0) {
 		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
 		return 1;
 	}
 
-	//mysql에 나온 결과를 저장한다.(전체로)
 	sql_result = mysql_store_result(connection);
 
 	printf("| %3s | %-10s | %8s | %8s| %8s |\n", "ID", "제품명", "제품가격", "소비자가격", "수량");
 
-	//나온 결과를 한줄씩 불러와 단어 하나하나로 나눈다. 값이 없으면 0, 있으면 포인터값 ->> 각단어를 배열로 저장
 	while ((sql_row = mysql_fetch_row(sql_result)) != NULL) {
 		printf("| %3d | %-10s | %8d | %9d | %8d |\n", stoi(sql_row[0]), sql_row[1], stoi(sql_row[2]), stoi(sql_row[3]), stoi(sql_row[4]));	//출력
 	}
@@ -122,14 +122,471 @@ int selectQuary() {
 	cout << "Empty!!" << endl;
 	}
 
+	if (keyControl() == TAB) {
+		return 0;
+	}
 	//mysql_store_result에 사용된 메모리를 헤체시킴-> 마치 malloc의 free역할
 	mysql_free_result(sql_result);
 }
 
-int main() {
-	selectQuary();
-	insertQuery();
+//품목 삭제
+int deleteQuery() {
+	system("cls");
+	char productName[30];
 
-	selectQuary();
+	mysql_init(&conn);
+
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
+	mysql_set_character_set(connection, "euckr");
+	if (connection == NULL) {
+		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+
+	cout << "제품명 : ";
+	fgets(productName, 30, stdin);
+	CHOP(productName);
+
+	sprintf(query, "delete from product where productName='%s'", productName);
+	query_stat = mysql_query(connection, query);
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		fprintf(stdout, "입력한 품목이 존재하지 않습니다.");
+		return 1;
+	}
+	//id 1~부터 배열하는 함수작성하기
+	mysql_close(connection);
+}
+
+//품목 수정
+int updateQueryProductName() {
+	char productName[30];
+	char changeName[30];
+
+	mysql_init(&conn);
+	mysql_set_character_set(connection, "euckr");
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
+	mysql_set_character_set(connection, "euckr");
+	if (connection == NULL) {
+		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+
+	cout << "제품명 : ";
+	fgets(productName, 30, stdin);
+	CHOP(productName);
+
+	cout<<"변경할 제품명 : ";
+	fgets(changeName, 30, stdin);
+	CHOP(changeName);
+	
+	sprintf(query, "update product set productName='%s' where productName='%s'", changeName, productName);
+	query_stat = mysql_query(connection, query);
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		cout<<"입력한 품목이 존재하지 않습니다.";
+		return 1;
+	}
+	mysql_close(connection);
+}
+int updateQueryProductPrice() {
+	char productName[30];
+	char changeProductPrice[8];
+
+	mysql_init(&conn);
+
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
+	mysql_set_character_set(connection, "euckr");
+	if (connection == NULL) {
+		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+
+	cout << "제품명 : ";
+	fgets(productName, 30, stdin);
+	CHOP(productName);
+
+	cout<<"변경할 가격 : ";
+	fgets(changeProductPrice, 8, stdin);
+	CHOP(changeProductPrice);
+
+	sprintf(query, "update product set productPrice= '%d' where productName='%s'", stoi(changeProductPrice), productName);
+	query_stat = mysql_query(connection, query);
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		fprintf(stdout, "입력한 품목이 존재하지 않습니다.");
+		return 1;
+	}
+	mysql_close(connection);
+}
+
+int updateQueryCustomerPrice() {
+	char productName[30];
+	char changeCustomerPrice[8];
+
+	mysql_init(&conn);
+
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
+	mysql_set_character_set(connection, "euckr");
+	if (connection == NULL) {
+		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+
+	cout<<"제품명 : ";
+	fgets(productName, 30, stdin);
+	CHOP(productName);
+
+	cout<<"변경할 소비자 가격 : ";
+	fgets(changeCustomerPrice, 8, stdin);
+	CHOP(changeCustomerPrice);
+
+	sprintf(query, "update product set customerPrice= '%d' where productName='%s'", stoi(changeCustomerPrice), productName);
+	query_stat = mysql_query(connection, query);
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		fprintf(stdout, "입력한 품목이 존재하지 않습니다.");
+		return 1;
+	}
+	mysql_close(connection);
+}
+
+int warehousing() {
+	char* productName;
+	char quantity[8];
+	char changeQuantity[8];
+	MYSQL_RES* sql_result;
+	MYSQL_ROW sql_row;
+
+	mysql_init(&conn);
+
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
+	mysql_set_character_set(connection, "euckr");
+	if (connection == NULL) {
+		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+
+	cout<<"제품명 : ";
+	fgets(productName, 30, stdin);
+	CHOP(productName);
+
+	cout<<"추가할 수량 : ";
+	fgets(changeQuantity, 8, stdin);
+	CHOP(changeQuantity);
+
+	const char* str = "select quantity from product where productName = ";
+	//const char * str2 = str + productName;
+	query_stat = mysql_query(connection, str2);
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+	sql_result = mysql_store_result(connection);
+	sql_row = mysql_fetch_row(sql_result);
+	if (sql_result == NULL) {
+		cout << "Empty!!" << endl;
+	}
+
+	sprintf(query, "update product set quantity='%d' where productName='%s'", stoi(sql_row[0])+stoi(changeQuantity), productName);
+	query_stat = mysql_query(connection, query);
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		fprintf(stdout, "입력한 품목이 존재하지 않습니다.\n");
+		return 1;
+	}
+	mysql_close(connection);
+}
+
+int updateQueryAll() {
+	char changeProductName[30];
+	char productName[30];
+	char changeProductPrice[8];
+	char changeCustomerPrice[8];
+	char changeQuantity[8];
+
+	mysql_init(&conn);
+
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
+	mysql_set_character_set(connection, "euckr");
+	if (connection == NULL) {
+		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+
+	cout << "제품명 : ";
+	fgets(productName, 30, stdin);
+	CHOP(productName);
+
+	cout << "변경할 이름 : ";
+	fgets(changeProductName, 8, stdin);
+	CHOP(changeProductName);
+
+	cout << "변경할 가격 : ";
+	fgets(changeProductPrice, 8, stdin);
+	CHOP(changeProductPrice);
+
+	cout << "변경할 소비자가격 : ";
+	fgets(changeCustomerPrice, 8, stdin);
+	CHOP(changeCustomerPrice);
+
+	cout << "변경할 수량 : ";
+	fgets(changeQuantity, 8, stdin);
+	CHOP(changeQuantity);
+
+	sprintf(query, " update product set productName='%s', productPrice='%d', customerPrice='%d', quantity='%d' where productName='%s'", changeProductName, stoi(changeProductPrice), stoi(changeCustomerPrice), stoi(changeQuantity),productName);
+	query_stat = mysql_query(connection, query);
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		fprintf(stdout, "입력한 품목이 존재하지 않습니다.\n");
+		return 1;
+	}
+	mysql_close(connection);
+}
+int updateQuery() {
+	system("cls");
+	char choice[3];
+	int i_choice;
+
+	//수정시, 한번더 로그인
+
+	//수정화면
+	cout << "무엇을 수정하시겠습니까?" << endl;
+	cout << "| 0. 전체 | 1. 제품명 | 2. 제품가격 | 3. 소비자가격 | 4. 수량 | "<<endl<<"==> ";
+
+	//입력
+	fgets(choice, 3,stdin);
+	i_choice = stoi(choice);
+	if (i_choice == 0) { updateQueryAll(); }
+	else if (i_choice == 1) {updateQueryProductName();}
+	else if (i_choice == 2) {updateQueryProductPrice();}
+	else if (i_choice == 3) {updateQueryCustomerPrice();}
+	else if (i_choice == 4) {}
+	else {cout << "옳지 않은 번호 입니다." << endl;}
 	return 0;
 }
+
+
+int managerMain() {
+	init();
+
+	while (true) {
+		managerTitle();
+
+		//메뉴 선택 -> 함수
+		int select = managerMenu();
+		if (select == 0) selectQuery();
+		else if (select == 1) insertQuery();
+		else if (select == 2) deleteQuery();
+		else if (select == 3) updateQuery();
+		//else if (select == 4) release();
+		else if (select == 5) {
+			gotoxy(0, 27); break;
+		}
+		system("cls");
+	}
+	return 0;
+}
+void login() {
+	init();
+	int wrong = 0;
+	while (true) {
+		system("cls");
+		if (wrong != 0) {
+			gotoxy(25, 2);
+			cout << wrong << "회 오류, 5회오류시 종료됩니다." << endl;
+		}
+		gotoxy(35, 10);
+		cout << "<Log-in>";
+		string id;
+		string password;
+		gotoxy(31, 12);
+		cout << "아이디 : ";
+		cin >> id;
+		gotoxy(29, 13);
+		cout << "비밀번호 : ";
+		cin >> password;
+
+		if (id == "manager" && password == "manager01") {
+			managerMain();
+			continue;
+		}
+		/*else if (id == "cashier" && password == "cashier01") {
+			cashierMain();
+			continue;
+		}*/
+		else {
+			gotoxy(25, 15);
+			//잘못된 아이디/비밀번호 입니다.
+			cout << "잘못된 아이디/비밀번호 입니다." << endl;
+			gotoxy(29, 16);
+			cout << "다시 시도해 주세요." << endl;
+			Sleep(1000);
+			wrong++;
+		}
+
+		if (wrong >= 5) {
+			return;
+		}
+	}
+
+	return;
+}
+
+int main() {
+	init();
+	//login();
+	managerMain();
+	return 0;
+}
+
+//초기화
+void init() {
+	//콘솔 크기 정하기
+	system("mode con cols=80 lines=30");
+
+	//깜빡거리는 커서 숨기기
+	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_CURSOR_INFO ConsoleCursor;
+	ConsoleCursor.bVisible = 0;
+	ConsoleCursor.dwSize = 1;
+	SetConsoleCursorInfo(consoleHandle, &ConsoleCursor);
+}
+
+//좌표찍기
+void gotoxy(int x, int y) {
+	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	COORD pos = { x, y };
+	SetConsoleCursorPosition(consoleHandle, pos);
+}
+
+//방향키로 좌표 조절하기
+int keyControl() {
+	char tmp = _getch();
+	if (tmp == -32) {
+		tmp = _getch();
+		switch (tmp) {
+		case 72:	//위
+			return UP; break;
+		case 80:	//아래
+			return DOWN; break;
+		case 75:	//왼쪽
+			return LEFT; break;
+		case 77:	//오른쪽
+			return RIGHT; break;
+		}
+	}
+	if (tmp == 13) {	//enter
+		return ENTER;
+	}
+	if (tmp == 9) {		//tab
+		return TAB;
+	}
+	if (tmp == 27) {
+		return ESC;
+	}
+}
+
+//title 출력하기
+void managerTitle() {
+	gotoxy(10, 2); cout << "------------------------------------------------------------";
+	gotoxy(16, 5); cout << "##       ##        #        #######     ########";
+	gotoxy(16, 6); cout << "####   ####      ## ##      ##    ##       ##";
+	gotoxy(16, 7); cout << "##  ###  ##     ##   ##     #######        ##";
+	gotoxy(16, 8); cout << "##   #   ##    #########    ##    ##       ##";
+	gotoxy(16, 9); cout << "##       ##   ##       ##   ##     ##      ##";
+	gotoxy(16, 10); cout << "##       ##   ##       ##   ##     ##      ##";
+	gotoxy(55, 12); cout << "_for manager";
+	gotoxy(10, 14); cout << "------------------------------------------------------------" << endl;
+}
+
+//메뉴설정
+int managerMenu() {
+	int x = 36;
+	int y = 17;
+
+	//메뉴출력
+	gotoxy(x - 6, y - 1); //30, 16
+	cout << "---------------------" << endl;
+	gotoxy(x - 2, y);	//34, 17
+	cout << "> 제품 목록" << endl;
+	gotoxy(x, y + 1);	//36, 18
+	cout << "품목 추가" << endl;
+	gotoxy(x, y + 2);	//36, 19
+	cout << "품목 삭제" << endl;
+	gotoxy(x, y + 3);	//36, 20
+	cout << " 입   고  " << endl;
+	gotoxy(x, y + 4);	//36, 21
+	cout << " 출   고" << endl;
+	gotoxy(x, y + 5);	//36, 22
+	cout << " 종   료" << endl;
+	gotoxy(x - 6, y + 6);	//36, 25
+	cout << "---------------------" << endl << endl;
+
+	//메뉴선택
+	while (true) {	//무한 반복
+		int n = keyControl();
+		switch (n) {
+		case UP:	//↑를 눌렸을 경우
+			if (y > 17) {	//y는 17~24사이만 이동 -> 17보다 커야함
+				gotoxy(x - 2, y);	//게임 시작에 있던 >
+				cout << " ";	//지우고
+				gotoxy(x - 2, --y);	//위쪽으로 1칸 이동후
+				cout << ">";	//다시 그리기
+			}
+			else if (y == 17) {	//맨 위 -> 맨 아래로 이동
+				gotoxy(x - 2, y);
+				cout << " ";
+				y = 22;
+				gotoxy(x - 2, y);
+				cout << ">";
+			}
+			break;
+
+		case DOWN:	//↓를 눌렸을 경우
+			if (y < 22) {	//y는 17~24사이만 이동 -> 24보다 작아야함
+				gotoxy(x - 2, y);
+				cout << " ";
+				gotoxy(x - 2, ++y);	//아래쪽으로 1칸 이동후
+				cout << ">";
+			}
+			else if (y == 22) {	//맨 아래 -> 맨 위로 이동
+				gotoxy(x - 2, y);
+				cout << " ";
+				y = 17;
+				gotoxy(x - 2, y);
+				cout << ">";
+			}
+			break;
+
+		case ENTER:	//엔터 -> 선택했을 경우
+			return y - 17;	//y-17를 하여 각 값에 대한 1, 2, 3...값을 받을 수 있다. -> 값 선택
+		}
+	}
+}
+
+
+
+
+
+/*
+	//ID 자동증가
+	sprintf(query, "set @count = 0");
+	query_stat = mysql_query(connection, query);
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		fprintf(stdout, "count초기화 불가");
+		return 1;
+	}
+	autoCount = 0;
+
+	sprintf(query, "update product set id = @count: = @count + %d", 1);
+	query_stat = mysql_query(connection, query);
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		fprintf(stdout, "ID증가 불가");
+		return 1;
+	}
+
+	//alter table product auto_increment=@count+1;이것도,,
+	*/
