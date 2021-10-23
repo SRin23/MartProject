@@ -26,10 +26,8 @@
 
 using namespace std;
 
-void mainTitle();
 void managerMain();
-void managerTitle();
-int managerMenu();
+void cashierMain();
 void init();
 void gotoxy(int x, int y);
 int keyControl();
@@ -39,7 +37,60 @@ MYSQL* connection = NULL, conn;
 int query_stat;
 char query[255];
 
-//품목 리스트
+//-------------------------------------------------- MAIN -----------------------------------------------------
+//main title출력
+void mainTitle()
+{
+	int x = 16, y = 7;
+	gotoxy(10, y - 3); cout << "====================================================================================================";
+	gotoxy(x, y++); cout << "##       ##        #        #######     ########";
+	gotoxy(x, y++); cout << "####   ####      ## ##      ##    ##       ##";
+	gotoxy(x, y++); cout << "##  ###  ##     ##   ##     #######        ##";
+	gotoxy(x, y++); cout << "##   #   ##    #########    ##    ##       ##";
+	gotoxy(x, y++); cout << "##       ##   ##       ##   ##     ##      ##";
+	gotoxy(x, y++); cout << "##       ##   ##       ##   ##     ##      ##";
+
+	x = 25, y = 15;
+	gotoxy(x, y++); cout << "  #######   ##      ##     #######    ##########   ##########   ##       ##";
+	gotoxy(x, y++); cout << "##           ##    ##    ##               ##       ##           ####   ####";
+	gotoxy(x, y++); cout << " #######      ##  ##      #######         ##       #######      ##  ###  ##";
+	gotoxy(x, y++); cout << "        ##     ##                ##       ##       ##           ##   #   ##";
+	gotoxy(x, y++); cout << "        ##     ##                ##       ##       ##           ##       ##";
+	gotoxy(x, y); cout << " ########      ##         ########        ##       ##########   ##       ##";
+	gotoxy(10, y + 3); cout << "====================================================================================================";
+}
+
+int main() {
+	//mainTitle();
+	//Sleep(2000);
+	//managerMain();
+	cashierMain();
+	return 0;
+}
+
+//-------------------------------------------------- MANAGER -----------------------------------------------------
+//manager title 출력하기
+void managerTitle(){
+	int x = 9, y = 7;
+	gotoxy(5, y - 3); cout << "============================================================================================================";
+	gotoxy(x, y++); cout << "##       ##        #        #######     ########";
+	gotoxy(x, y++); cout << "####   ####      ## ##      ##    ##       ##";
+	gotoxy(x, y++); cout << "##  ###  ##     ##   ##     #######        ##";
+	gotoxy(x, y++); cout << "##   #   ##    #########    ##    ##       ##";
+	gotoxy(x, y++); cout << "##       ##   ##       ##   ##     ##      ##";
+	gotoxy(x, y); cout << "##       ##   ##       ##   ##     ##      ##";
+
+	x = 18, y = 15;
+	gotoxy(x, y++); cout << "##       ##        #        ##       ##        #          #######     ##########   #######";
+	gotoxy(x, y++); cout << "####   ####      ## ##      ####     ##      ## ##       ##           ##           ##    ##";
+	gotoxy(x, y++); cout << "##  ###  ##     ##   ##     ##  ##   ##     ##   ##     ##            ########     #######";
+	gotoxy(x, y++); cout << "##   #   ##    #########    ##    ## ##    #########    ##    ####    ##           ##    ##";
+	gotoxy(x, y++); cout << "##       ##   ##       ##   ##      ###   ##       ##    ##      ##   ##           ##     ##";
+	gotoxy(x, y); cout << "##       ##   ##       ##   ##       ##   ##       ##     ########    ##########   ##     ##";
+	gotoxy(5, y + 3); cout << "============================================================================================================";
+}
+
+//데이터 출력
 int selectQuery() {
 	system("cls");
 	MYSQL_RES* sql_result;
@@ -75,6 +126,7 @@ int selectQuery() {
 	mysql_free_result(sql_result);
 }
 
+//품목 리스트 출력
 int productList() {
 	system("cls");
 	selectQuery();
@@ -82,8 +134,9 @@ int productList() {
 		return 0;
 	}
 }
-//품목 추가
-int insertQuery() {
+
+//manager품목 추가
+int m_insertQuery() {
 	selectQuery();
 	char productName[30];
 	char productPrice[10];
@@ -138,8 +191,8 @@ int insertQuery() {
 	return 0;
 }
 
-//품목 삭제
-int deleteQuery() {
+//manager품목 삭제
+int m_deleteQuery() {
 	selectQuery();
 	char productName[30];
 
@@ -173,7 +226,7 @@ int deleteQuery() {
 	mysql_close(connection);
 }
 
-//품목 수정
+//manager품목 수정
 int updateQueryProductName() {
 	char productName[30];
 	char changeName[30];
@@ -306,7 +359,7 @@ int updateQueryAll() {
 	}
 	mysql_close(connection);
 }
-int updateQuery() {
+int m_updateQuery() {
 	char choice[3];
 	int i_choice;
 
@@ -327,8 +380,8 @@ int updateQuery() {
 	return 0;
 }
 
-//입고
-int warehousing() {
+//manager입고
+int m_warehousing() {
 	system("cls");
 
 	selectQuery();
@@ -367,8 +420,8 @@ int warehousing() {
 	mysql_close(connection);
 	return 0;
 }
-//출고
-int release() {
+//manager출고
+int m_release() {
 	system("cls");
 
 	selectQuery();
@@ -408,75 +461,7 @@ int release() {
 	return 0;
 }
 
-int main() {
-	//mainTitle();
-	//Sleep(2000);
-	managerMain();
-	return 0;
-}
-
-void mainTitle()
-{
-	int x = 16, y = 7;
-	gotoxy(10, y - 3); cout << "====================================================================================================";
-	gotoxy(x, y++); cout << "##       ##        #        #######     ########";
-	gotoxy(x, y++); cout << "####   ####      ## ##      ##    ##       ##";
-	gotoxy(x, y++); cout << "##  ###  ##     ##   ##     #######        ##";
-	gotoxy(x, y++); cout << "##   #   ##    #########    ##    ##       ##";
-	gotoxy(x, y++); cout << "##       ##   ##       ##   ##     ##      ##";
-	gotoxy(x, y++); cout << "##       ##   ##       ##   ##     ##      ##";
-
-	x = 25, y = 15;
-	gotoxy(x, y++); cout << "  #######   ##      ##     #######    ##########   ##########   ##       ##";
-	gotoxy(x, y++); cout << "##           ##    ##    ##               ##       ##           ####   ####";
-	gotoxy(x, y++); cout << " #######      ##  ##      #######         ##       #######      ##  ###  ##";
-	gotoxy(x, y++); cout << "        ##     ##                ##       ##       ##           ##   #   ##";
-	gotoxy(x, y++); cout << "        ##     ##                ##       ##       ##           ##       ##";
-	gotoxy(x, y); cout << " ########      ##         ########        ##       ##########   ##       ##";
-	gotoxy(10, y + 3); cout << "====================================================================================================";
-}
-
-void managerMain() {
-	system("cls");
-	managerTitle();
-	Sleep(2000);
-	init();
-	while (true) {
-		//메뉴 선택 -> 함수
-		int select = managerMenu();
-		if (select == 0) productList();
-		else if (select == 1)insertQuery();
-		else if (select == 2) deleteQuery();
-		else if (select == 3) warehousing();	//입고
-		else if (select == 4) release();		//출고
-		else if (select == 5) {
-			gotoxy(0, 27); break;
-		}
-	}
-}
-
-//title 출력하기
-void managerTitle(){
-	int x = 9, y = 7;
-	gotoxy(5, y - 3); cout << "============================================================================================================";
-	gotoxy(x, y++); cout << "##       ##        #        #######     ########";
-	gotoxy(x, y++); cout << "####   ####      ## ##      ##    ##       ##";
-	gotoxy(x, y++); cout << "##  ###  ##     ##   ##     #######        ##";
-	gotoxy(x, y++); cout << "##   #   ##    #########    ##    ##       ##";
-	gotoxy(x, y++); cout << "##       ##   ##       ##   ##     ##      ##";
-	gotoxy(x, y); cout << "##       ##   ##       ##   ##     ##      ##";
-
-	x = 18, y = 15;
-	gotoxy(x, y++); cout << "##       ##        #        ##       ##        #          #######     ##########   #######";
-	gotoxy(x, y++); cout << "####   ####      ## ##      ####     ##      ## ##       ##           ##           ##    ##";
-	gotoxy(x, y++); cout << "##  ###  ##     ##   ##     ##  ##   ##     ##   ##     ##            ########     #######";
-	gotoxy(x, y++); cout << "##   #   ##    #########    ##    ## ##    #########    ##    ####    ##           ##    ##";
-	gotoxy(x, y++); cout << "##       ##   ##       ##   ##      ###   ##       ##    ##      ##   ##           ##     ##";
-	gotoxy(x, y); cout << "##       ##   ##       ##   ##       ##   ##       ##     ########    ##########   ##     ##";
-	gotoxy(5, y + 3); cout << "============================================================================================================";
-}
-
-//메뉴설정
+//manager메뉴설정
 int managerMenu() {
 	system("cls");
 	int x = 56;
@@ -542,7 +527,8 @@ int managerMenu() {
 	}
 }
 
-void cashierMain() {
+//manager메인
+void managerMain() {
 	system("cls");
 	managerTitle();
 	Sleep(2000);
@@ -551,34 +537,36 @@ void cashierMain() {
 		//메뉴 선택 -> 함수
 		int select = managerMenu();
 		if (select == 0) productList();
-		else if (select == 1)insertQuery();
-		else if (select == 2) deleteQuery();
-		else if (select == 3) warehousing();	//입고
-		else if (select == 4) release();		//출고
+		else if (select == 1)m_insertQuery();
+		else if (select == 2) m_deleteQuery();
+		else if (select == 3) m_warehousing();	//입고
+		else if (select == 4) m_release();		//출고
 		else if (select == 5) {
 			gotoxy(0, 27); break;
 		}
 	}
 }
 
-//title 출력하기
+
+//-------------------------------------------------- CASHIER -----------------------------------------------------
+//cashier title 출력하기
 void cashierTitle() {
-	int x = 9, y = 7;
+	int x = 18, y = 7;
 	gotoxy(5, y - 3); cout << "============================================================================================================";
 	gotoxy(x, y++); cout << "##       ##        #        #######     ########";
 	gotoxy(x, y++); cout << "####   ####      ## ##      ##    ##       ##";
 	gotoxy(x, y++); cout << "##  ###  ##     ##   ##     #######        ##";
 	gotoxy(x, y++); cout << "##   #   ##    #########    ##    ##       ##";
 	gotoxy(x, y++); cout << "##       ##   ##       ##   ##     ##      ##";
-	gotoxy(x, y); cout << "##       ##   ##       ##   ##     ##      ##";
+	gotoxy(x, y);   cout << "##       ##   ##       ##   ##     ##      ##";
 
-	x = 18, y = 15;
-	gotoxy(x, y++); cout << "##       ##        #        ##       ##        #          #######     ##########   #######";
-	gotoxy(x, y++); cout << "####   ####      ## ##      ####     ##      ## ##       ##           ##           ##    ##";
-	gotoxy(x, y++); cout << "##  ###  ##     ##   ##     ##  ##   ##     ##   ##     ##            ########     #######";
-	gotoxy(x, y++); cout << "##   #   ##    #########    ##    ## ##    #########    ##    ####    ##           ##    ##";
-	gotoxy(x, y++); cout << "##       ##   ##       ##   ##      ###   ##       ##    ##      ##   ##           ##     ##";
-	gotoxy(x, y); cout << "##       ##   ##       ##   ##       ##   ##       ##     ########    ##########   ##     ##";
+	x = 24, y = 15;
+	gotoxy(x, y++); cout << "  #######       #        ######    ##       ##  ######  #########  #######";
+	gotoxy(x, y++); cout << "##            ## ##    ##          ##       ##    ##    ##         ##    ##";
+	gotoxy(x, y++); cout << "##           ##   ##     #######   ###########    ##    #######    #######";
+	gotoxy(x, y++); cout << "##          #########          ##  ##       ##    ##    ##         ##    ##"; 
+	gotoxy(x, y++); cout << "##         ##       ##         ##  ##       ##    ##    ##         ##     ##";
+	gotoxy(x, y);   cout << "  #######  ##       ##  #######    ##       ##  ######  #########  ##     ##";
 	gotoxy(5, y + 3); cout << "============================================================================================================";
 }
 
@@ -594,15 +582,15 @@ int cashierMenu() {
 	gotoxy(x - 2, y);	//34, 17
 	cout << "> 제품 목록" << endl;
 	gotoxy(x, y + 1);	//36, 18
-	cout << "품목 추가" << endl;
+	cout << "카트 추가" << endl;
 	gotoxy(x, y + 2);	//36, 19
-	cout << "품목 삭제" << endl;
+	cout << "카트 삭제" << endl;
 	gotoxy(x, y + 3);	//36, 20
-	cout << " 입   고  " << endl;
+	cout << "구     매" << endl;
 	gotoxy(x, y + 4);	//36, 21
-	cout << " 출   고" << endl;
+	cout << "환     불" << endl;
 	gotoxy(x, y + 5);	//36, 22
-	cout << " 종   료" << endl;
+	cout << "종     료" << endl;
 	gotoxy(x - 6, y + 6);	//36, 25
 	cout << "---------------------" << endl << endl;
 
@@ -644,6 +632,24 @@ int cashierMenu() {
 
 		case ENTER:	//엔터 -> 선택했을 경우
 			return y - 12;	//y-17를 하여 각 값에 대한 1, 2, 3...값을 받을 수 있다. -> 값 선택
+		}
+	}
+}
+
+void cashierMain() {
+	system("cls");
+	cashierTitle();
+	Sleep(2000);
+	init();
+	while (true) {
+		int select = cashierMenu();
+		if (select == 0) productList();
+		//else if (select == 1) addShoppingCart();
+		//else if (select == 2) delShoppingCart();
+		//else if (select == 3) buy();
+		//else if (select == 4) refund();
+		else if (select == 5) {
+			gotoxy(0, 27); break;
 		}
 	}
 }
