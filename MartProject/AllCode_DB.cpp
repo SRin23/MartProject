@@ -88,6 +88,7 @@ int insertQuery() {
 	}
 
 	mysql_close(connection);
+	return 0;
 }
 
 //품목 리스트
@@ -127,6 +128,7 @@ int selectQuery() {
 	}
 	//mysql_store_result에 사용된 메모리를 헤체시킴-> 마치 malloc의 free역할
 	mysql_free_result(sql_result);
+	return 0;
 }
 
 //품목 삭제
@@ -156,6 +158,7 @@ int deleteQuery() {
 	}
 	//id 1~부터 배열하는 함수작성하기
 	mysql_close(connection);
+	return 0;
 }
 
 //품목 수정
@@ -187,8 +190,10 @@ int updateQueryProductName() {
 		cout<<"입력한 품목이 존재하지 않습니다.";
 		return 1;
 	}
-	mysql_close(connection);
+	mysql_close(connection); 
+	return 0;
 }
+
 int updateQueryProductPrice() {
 	char productName[30];
 	char changeProductPrice[8];
@@ -218,6 +223,7 @@ int updateQueryProductPrice() {
 		return 1;
 	}
 	mysql_close(connection);
+	return 0;
 }
 
 int updateQueryCustomerPrice() {
@@ -249,10 +255,11 @@ int updateQueryCustomerPrice() {
 		return 1;
 	}
 	mysql_close(connection);
+	return 0;
 }
-
+/*
 int warehousing() {
-	char* productName;
+	char productName[30];
 	char quantity[8];
 	char changeQuantity[8];
 	MYSQL_RES* sql_result;
@@ -275,9 +282,9 @@ int warehousing() {
 	fgets(changeQuantity, 8, stdin);
 	CHOP(changeQuantity);
 
-	const char* str = "select quantity from product where productName = ";
+	//const char* str = "select quantity from product where productName = ";
 	//const char * str2 = str + productName;
-	query_stat = mysql_query(connection, str2);
+	//query_stat = mysql_query(connection, str2);
 	if (query_stat != 0) {
 		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
 		return 1;
@@ -297,13 +304,12 @@ int warehousing() {
 	}
 	mysql_close(connection);
 }
-
+*/
 int updateQueryAll() {
 	char changeProductName[30];
 	char productName[30];
 	char changeProductPrice[8];
 	char changeCustomerPrice[8];
-	char changeQuantity[8];
 
 	mysql_init(&conn);
 
@@ -330,11 +336,7 @@ int updateQueryAll() {
 	fgets(changeCustomerPrice, 8, stdin);
 	CHOP(changeCustomerPrice);
 
-	cout << "변경할 수량 : ";
-	fgets(changeQuantity, 8, stdin);
-	CHOP(changeQuantity);
-
-	sprintf(query, " update product set productName='%s', productPrice='%d', customerPrice='%d', quantity='%d' where productName='%s'", changeProductName, stoi(changeProductPrice), stoi(changeCustomerPrice), stoi(changeQuantity),productName);
+	sprintf(query, " update product set productName='%s', productPrice='%d', customerPrice='%d' where productName='%s'", changeProductName, stoi(changeProductPrice), stoi(changeCustomerPrice),productName);
 	query_stat = mysql_query(connection, query);
 	if (query_stat != 0) {
 		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
@@ -342,6 +344,7 @@ int updateQueryAll() {
 		return 1;
 	}
 	mysql_close(connection);
+	return 0;
 }
 int updateQuery() {
 	system("cls");
@@ -361,7 +364,6 @@ int updateQuery() {
 	else if (i_choice == 1) {updateQueryProductName();}
 	else if (i_choice == 2) {updateQueryProductPrice();}
 	else if (i_choice == 3) {updateQueryCustomerPrice();}
-	else if (i_choice == 4) {}
 	else {cout << "옳지 않은 번호 입니다." << endl;}
 	return 0;
 }
@@ -387,52 +389,6 @@ int managerMain() {
 	}
 	return 0;
 }
-void login() {
-	init();
-	int wrong = 0;
-	while (true) {
-		system("cls");
-		if (wrong != 0) {
-			gotoxy(25, 2);
-			cout << wrong << "회 오류, 5회오류시 종료됩니다." << endl;
-		}
-		gotoxy(35, 10);
-		cout << "<Log-in>";
-		string id;
-		string password;
-		gotoxy(31, 12);
-		cout << "아이디 : ";
-		cin >> id;
-		gotoxy(29, 13);
-		cout << "비밀번호 : ";
-		cin >> password;
-
-		if (id == "manager" && password == "manager01") {
-			managerMain();
-			continue;
-		}
-		/*else if (id == "cashier" && password == "cashier01") {
-			cashierMain();
-			continue;
-		}*/
-		else {
-			gotoxy(25, 15);
-			//잘못된 아이디/비밀번호 입니다.
-			cout << "잘못된 아이디/비밀번호 입니다." << endl;
-			gotoxy(29, 16);
-			cout << "다시 시도해 주세요." << endl;
-			Sleep(1000);
-			wrong++;
-		}
-
-		if (wrong >= 5) {
-			return;
-		}
-	}
-
-	return;
-}
-
 int main() {
 	init();
 	//login();
@@ -485,19 +441,29 @@ int keyControl() {
 	if (tmp == 27) {
 		return ESC;
 	}
+	return 0;
 }
 
 //title 출력하기
+//title 출력하기
 void managerTitle() {
-	gotoxy(10, 2); cout << "------------------------------------------------------------";
-	gotoxy(16, 5); cout << "##       ##        #        #######     ########";
-	gotoxy(16, 6); cout << "####   ####      ## ##      ##    ##       ##";
-	gotoxy(16, 7); cout << "##  ###  ##     ##   ##     #######        ##";
-	gotoxy(16, 8); cout << "##   #   ##    #########    ##    ##       ##";
-	gotoxy(16, 9); cout << "##       ##   ##       ##   ##     ##      ##";
-	gotoxy(16, 10); cout << "##       ##   ##       ##   ##     ##      ##";
-	gotoxy(55, 12); cout << "_for manager";
-	gotoxy(10, 14); cout << "------------------------------------------------------------" << endl;
+	int x = 16, y = 7;
+	gotoxy(10, y - 3); cout << "====================================================================================================";
+	gotoxy(x, y++); cout << "##       ##        #        #######     ########";
+	gotoxy(x, y++); cout << "####   ####      ## ##      ##    ##       ##";
+	gotoxy(x, y++); cout << "##  ###  ##     ##   ##     #######        ##";
+	gotoxy(x, y++); cout << "##   #   ##    #########    ##    ##       ##";
+	gotoxy(x, y++); cout << "##       ##   ##       ##   ##     ##      ##";
+	gotoxy(x, y); cout << "##       ##   ##       ##   ##     ##      ##";
+
+	x = 25, y = 15;
+	gotoxy(x, y++); cout << "##       ##        #        ##       ##        #          #######     ##########   #######";
+	gotoxy(x, y++); cout << "####   ####      ## ##      ####     ##      ## ##       ##           ##           ##    ##";
+	gotoxy(x, y++); cout << "##  ###  ##     ##   ##     ##  ##   ##     ##   ##     ##            ########     #######";
+	gotoxy(x, y++); cout << "##   #   ##    #########    ##    ## ##    #########    ##    ####    ##           ##    ##";
+	gotoxy(x, y++); cout << "##       ##   ##       ##   ##      ###   ##       ##    ##      ##   ##           ##     ##";
+	gotoxy(x, y); cout << "##       ##   ##       ##   ##       ##   ##       ##     ########    ##########   ##     ##";
+	gotoxy(10, y + 3); cout << "====================================================================================================";
 }
 
 //메뉴설정
