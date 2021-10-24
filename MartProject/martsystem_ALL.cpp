@@ -26,6 +26,7 @@
 
 using namespace std;
 
+void loginMain();
 void managerMain();
 void cashierMain();
 void init();
@@ -64,32 +65,151 @@ int main() {
 	//mainTitle();
 	//Sleep(2000);
 	//managerMain();
-	cashierMain();
+	//cashierMain();
+	loginMain();
 	return 0;
 }
 
-//-------------------------------------------------- MANAGER -----------------------------------------------------
-//manager title 출력하기
-void managerTitle(){
-	int x = 9, y = 7;
-	gotoxy(5, y - 3); cout << "============================================================================================================";
-	gotoxy(x, y++); cout << "##       ##        #        #######     ########";
-	gotoxy(x, y++); cout << "####   ####      ## ##      ##    ##       ##";
-	gotoxy(x, y++); cout << "##  ###  ##     ##   ##     #######        ##";
-	gotoxy(x, y++); cout << "##   #   ##    #########    ##    ##       ##";
-	gotoxy(x, y++); cout << "##       ##   ##       ##   ##     ##      ##";
-	gotoxy(x, y); cout << "##       ##   ##       ##   ##     ##      ##";
+//-------------------------------------------------- login -----------------------------------------------------
 
-	x = 18, y = 15;
-	gotoxy(x, y++); cout << "##       ##        #        ##       ##        #          #######     ##########   #######";
-	gotoxy(x, y++); cout << "####   ####      ## ##      ####     ##      ## ##       ##           ##           ##    ##";
-	gotoxy(x, y++); cout << "##  ###  ##     ##   ##     ##  ##   ##     ##   ##     ##            ########     #######";
-	gotoxy(x, y++); cout << "##   #   ##    #########    ##    ## ##    #########    ##    ####    ##           ##    ##";
-	gotoxy(x, y++); cout << "##       ##   ##       ##   ##      ###   ##       ##    ##      ##   ##           ##     ##";
-	gotoxy(x, y); cout << "##       ##   ##       ##   ##       ##   ##       ##     ########    ##########   ##     ##";
-	gotoxy(5, y + 3); cout << "============================================================================================================";
+int signup() {
+	system("cls");
+	char name[30];
+	char id[16];
+	char pw[16];
+	char role[2];
+
+	mysql_init(&conn);
+
+	//Mysql 데이터베이스 엔진으로 연결 시도.
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
+	mysql_set_character_set(connection, "euckr");
+	//C++과 mysql이 연동되지 않았을 경우 에러메세지
+	//con성공 : MYSQL* 연결 핸들 (= 첫 번째 파라미터)/실패: NULL
+	if (connection == NULL) {
+		//fprintf -> stderr는 모니터에 에러 메세지를 보여주는 코드(원래는 파일에 작성하는 코드)
+		//mysql_error로 인해 mysql에서 보내는 error를 바로 볼 수 있다.
+		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+
+	printf("이름 : ");
+	fgets(name, 30, stdin);
+	//입력받은 문자열의 끝 부분 공백을 지워서 그 결과를 돌려주는 역할
+	CHOP(name);
+
+	printf("아이디 : ");
+	fgets(id, 16, stdin);
+	CHOP(id);
+
+	printf("비밀번호 : ");
+	fgets(pw, 16, stdin);
+	CHOP(pw);
+
+	//안됨
+	printf("역할(M/C) : ");
+	fgets(role, 2, stdin);
+	CHOP(role);
+
+	//db에서 작성
+	//sprint : query에 "insert into login values ('%s', '%s')", name, passwor문장을 저장
+	sprintf(query, "insert into login_info (name, id, pw, role) values ('%s', '%s', '%s', '%s')", name, id, pw, role);
+	query_stat = mysql_query(connection, query);
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+	
+	cout <<endl<<endl<< "회원가입이 완료 되었습니다." << endl;
+	Sleep(2000);
+	mysql_close(connection);
+	return 0;
 }
 
+void signin() {
+	system("cls");
+	cout << "SignIN화면입니다." << endl;
+	if (keyControl() == TAB) {
+		return;
+	}
+}
+
+//manager메뉴설정
+int loginMenu() {
+	system("cls");
+	int x = 56;
+	int y = 12;
+
+	//메뉴출력
+	gotoxy(x - 6, y - 1); //30, 16
+	cout << "---------------------" << endl;
+	gotoxy(x - 2, y);	//34, 17
+	cout << ">  Sign UP" << endl;
+	gotoxy(x, y + 1);	//36, 18
+	cout << " Sign IN" << endl;
+	gotoxy(x, y + 2);	//36, 19
+	cout << " 종   료" << endl;
+	gotoxy(x - 6, y + 3);	//36, 25
+	cout << "---------------------" << endl << endl;
+
+	//메뉴선택
+	while (true) {	//무한 반복
+		int n = keyControl();
+		switch (n) {
+		case UP:	//↑를 눌렸을 경우
+			if (y > 12) {	//y는 17~24사이만 이동 -> 17보다 커야함
+				gotoxy(x - 2, y);	//게임 시작에 있던 >
+				cout << " ";	//지우고
+				gotoxy(x - 2, --y);	//위쪽으로 1칸 이동후
+				cout << ">";	//다시 그리기
+			}
+			else if (y == 12) {	//맨 위 -> 맨 아래로 이동
+				gotoxy(x - 2, y);
+				cout << " ";
+				y = 14;
+				gotoxy(x - 2, y);
+				cout << ">";
+			}
+			break;
+
+		case DOWN:	//↓를 눌렸을 경우
+			if (y < 14) {	//y는 17~24사이만 이동 -> 24보다 작아야함
+				gotoxy(x - 2, y);
+				cout << " ";
+				gotoxy(x - 2, ++y);	//아래쪽으로 1칸 이동후
+				cout << ">";
+			}
+			else if (y == 14) {	//맨 아래 -> 맨 위로 이동
+				gotoxy(x - 2, y);
+				cout << " ";
+				y = 12;
+				gotoxy(x - 2, y);
+				cout << ">";
+			}
+			break;
+
+		case ENTER:	//엔터 -> 선택했을 경우
+			return y - 12;	//y-17를 하여 각 값에 대한 1, 2, 3...값을 받을 수 있다. -> 값 선택
+		}
+	}
+}
+
+//login메인
+void loginMain() {
+	system("cls");
+	init();
+	while (true) {
+		//메뉴 선택 -> 함수
+		int select = loginMenu();
+		if (select == 0) signup();
+		else if (select == 1) signin();
+		else if (select == 2) {
+			gotoxy(0, 25); break;
+		}
+	}
+}
+
+//-------------------------------------------------- MANAGER -----------------------------------------------------
 //데이터 출력
 int selectQuery() {
 	system("cls");
@@ -461,6 +581,27 @@ int m_release() {
 	return 0;
 }
 
+//manager title 출력하기
+void managerTitle() {
+	int x = 9, y = 7;
+	gotoxy(5, y - 3); cout << "============================================================================================================";
+	gotoxy(x, y++); cout << "##       ##        #        #######     ########";
+	gotoxy(x, y++); cout << "####   ####      ## ##      ##    ##       ##";
+	gotoxy(x, y++); cout << "##  ###  ##     ##   ##     #######        ##";
+	gotoxy(x, y++); cout << "##   #   ##    #########    ##    ##       ##";
+	gotoxy(x, y++); cout << "##       ##   ##       ##   ##     ##      ##";
+	gotoxy(x, y); cout << "##       ##   ##       ##   ##     ##      ##";
+
+	x = 18, y = 15;
+	gotoxy(x, y++); cout << "##       ##        #        ##       ##        #          #######     ##########   #######";
+	gotoxy(x, y++); cout << "####   ####      ## ##      ####     ##      ## ##       ##           ##           ##    ##";
+	gotoxy(x, y++); cout << "##  ###  ##     ##   ##     ##  ##   ##     ##   ##     ##            ########     #######";
+	gotoxy(x, y++); cout << "##   #   ##    #########    ##    ## ##    #########    ##    ####    ##           ##    ##";
+	gotoxy(x, y++); cout << "##       ##   ##       ##   ##      ###   ##       ##    ##      ##   ##           ##     ##";
+	gotoxy(x, y); cout << "##       ##   ##       ##   ##       ##   ##       ##     ########    ##########   ##     ##";
+	gotoxy(5, y + 3); cout << "============================================================================================================";
+}
+
 //manager메뉴설정
 int managerMenu() {
 	system("cls");
@@ -549,6 +690,12 @@ void managerMain() {
 
 
 //-------------------------------------------------- CASHIER -----------------------------------------------------
+
+//카트에 물품 추가 
+int addShoppingCart() {
+	return 0;
+}
+
 //cashier title 출력하기
 void cashierTitle() {
 	int x = 18, y = 7;
@@ -701,4 +848,3 @@ int keyControl() {
 	}
 	return 0;
 }
-
