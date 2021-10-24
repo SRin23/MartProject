@@ -33,6 +33,7 @@ void init();
 void gotoxy(int x, int y);
 int keyControl();
 static int product_Count = 0;
+static int cart_Count = 0;
 
 MYSQL* connection = NULL, conn;
 int query_stat;
@@ -72,7 +73,7 @@ int main() {
 
 //-------------------------------------------------- login -----------------------------------------------------
 
-//회원가입
+//회원가입 => 수정필요
 int signup() {
 	system("cls");
 	char name[30];
@@ -128,12 +129,71 @@ int signup() {
 }
 
 //로그인
-void signin() {
+int signin() {
 	system("cls");
-	cout << "SignIN화면입니다." << endl;
-	if (keyControl() == TAB) {
-		return;
+	MYSQL_RES* sql_result;
+	MYSQL_ROW sql_row;
+	char id[16];
+	char pw[16];
+	int listCount = 1;
+	mysql_init(&conn);
+
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
+	mysql_set_character_set(connection, "euckr");
+	if (connection == NULL) {
+		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
+		return 1;
 	}
+
+	printf("ID : ");
+	fgets(id, 16, stdin);
+	//입력받은 문자열의 끝 부분 공백을 지워서 그 결과를 돌려주는 역할
+	CHOP(id);
+	//printf("%s\n", id);
+
+	printf("Password : ");
+	fgets(pw, 16, stdin);
+	CHOP(pw);
+	//printf("%s\n", pw);
+
+	query_stat = mysql_query(connection, "select * from login_info");
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+
+	sql_result = mysql_store_result(connection);
+
+	while ((sql_row = mysql_fetch_row(sql_result)) != NULL) {
+		//printf("%s, %s\n", sql_row[0], sql_row[1]);
+		if (!strcmp(id, sql_row[1])) {
+			if (!strcmp(pw, sql_row[2])) {
+				cout << sql_row[0] << "님, 로그인 되었습니다." << endl;
+				Sleep(2000);
+				if (!strcmp("M", sql_row[3])) {
+					managerMain();
+					return 0;
+				}
+				else if (!strcmp("C", sql_row[3])) {
+					cashierMain();
+					return 0;
+				}
+				else {
+					cout << "접근할 수 없는 회원입니다." << endl;
+				}
+			}
+			cout << "잘못된 비밀번호 입니다." << endl;
+			Sleep(2000);
+		}
+	}
+	cout << "아이디/비밀번호가 없습니다." << endl;
+	Sleep(2000);
+	if (sql_result == NULL) {
+		cout << "Empty!!" << endl;
+	}
+
+	//mysql_store_result에 사용된 메모리를 헤체시킴-> 마치 malloc의 free역할
+	mysql_free_result(sql_result);
 }
 
 //login메뉴설정 
@@ -693,8 +753,88 @@ void managerMain() {
 
 //-------------------------------------------------- CASHIER -----------------------------------------------------
 
+//카트 담긴 품목 리스트
+int CartList() {
+	system("cls");
+	MYSQL_RES* sql_result;
+	MYSQL_ROW sql_row;
+	int cartCount = 1;
+	mysql_init(&conn);
+
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
+	mysql_set_character_set(connection, "euckr");
+	if (connection == NULL) {
+		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+
+	query_stat = mysql_query(connection, "select * from cart");
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+
+	sql_result = mysql_store_result(connection);
+
+	printf("| %3s | %-10s | %8s | %8s |\n", "ID", "제품명", "소비자가격", "수량");
+
+	while ((sql_row = mysql_fetch_row(sql_result)) != NULL) {
+		printf("| %3d | %-10s | %8d | %8d |\n", cartCount++, sql_row[0], stoi(sql_row[1]), stoi(sql_row[2]));	//출력
+	}
+	if (sql_result == NULL) {
+		cout << "Empty!!" << endl;
+	}
+
+	//mysql_store_result에 사용된 메모리를 헤체시킴-> 마치 malloc의 free역할
+	mysql_free_result(sql_result);
+}
+
 //카트에 물품 추가 
 int addShoppingCart() {
+	selectQuery();
+	char productName[30];
+	char customerPrice[10];
+	char quantity[10];
+
+	mysql_init(&conn);
+
+	//Mysql 데이터베이스 엔진으로 연결 시도.
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
+	mysql_set_character_set(connection, "euckr");
+	//C++과 mysql이 연동되지 않았을 경우 에러메세지
+	//con성공 : MYSQL* 연결 핸들 (= 첫 번째 파라미터)/실패: NULL
+	if (connection == NULL) {
+		//fprintf -> stderr는 모니터에 에러 메세지를 보여주는 코드(원래는 파일에 작성하는 코드)
+		//mysql_error로 인해 mysql에서 보내는 error를 바로 볼 수 있다.
+		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+
+	printf("제품명 : ");
+	fgets(productName, 30, stdin);
+	//입력받은 문자열의 끝 부분 공백을 지워서 그 결과를 돌려주는 역할
+	CHOP(productName);
+
+	printf("제품수량 : ");
+	fgets(quantity, 10, stdin);
+	CHOP(quantity);
+
+	//제품가격 -> product table에서 가져오기
+
+	//db에서 작성
+	//sprint : query에 "insert into login values ('%s', '%s')", name, passwor문장을 저장
+	sprintf(query, "insert into product (productName, customerPrice, quantity) values ('%s', '%d', '%d')", productName, stoi(customerPrice), stoi(quantity));
+	query_stat = mysql_query(connection, query);
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+	system("cls");
+	CartList();
+	cout << "카트 담기가 완료 되었습니다." << endl;
+	cart_Count++;
+	Sleep(2000);
+	mysql_close(connection);
 	return 0;
 }
 
