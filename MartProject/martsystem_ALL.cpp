@@ -72,6 +72,7 @@ int main() {
 
 //-------------------------------------------------- login -----------------------------------------------------
 
+//회원가입
 int signup() {
 	system("cls");
 	char name[30];
@@ -126,6 +127,7 @@ int signup() {
 	return 0;
 }
 
+//로그인
 void signin() {
 	system("cls");
 	cout << "SignIN화면입니다." << endl;
@@ -134,7 +136,7 @@ void signin() {
 	}
 }
 
-//manager메뉴설정
+//login메뉴설정 
 int loginMenu() {
 	system("cls");
 	int x = 56;
