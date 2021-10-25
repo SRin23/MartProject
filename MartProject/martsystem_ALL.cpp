@@ -863,6 +863,88 @@ int addShoppingCart() {
 	return 0;
 }
 
+//품목 아예 삭제
+int delShoppingCart() {
+	CartList();
+	char productName[30];
+
+	mysql_init(&conn);
+
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
+	mysql_set_character_set(connection, "euckr");
+	if (connection == NULL) {
+		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+
+	printf("제품명 : ");
+	fgets(productName, 30, stdin);
+	CHOP(productName);
+
+	sprintf(query, "delete from cart where productName='%s'", productName);
+	query_stat = mysql_query(connection, query);
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+	system("cls");
+	CartList();
+	cout << "카트 내 품목 삭제가 완료 되었습니다." << endl;
+	Sleep(2000);
+	cart_Count--;
+	mysql_close(connection);
+	return 0;
+}
+
+//수량변경
+int updateShoppingCart() {
+	CartList();
+	char productName[30];
+	char minusQuantity[10];
+
+	mysql_init(&conn);
+
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
+	mysql_set_character_set(connection, "euckr");
+	if (connection == NULL) {
+		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+
+	printf("제품명 : ");
+	fgets(productName, 30, stdin);
+	CHOP(productName);
+
+	printf("삭제 수량 : ");
+	fgets(minusQuantity, 10, stdin);
+	CHOP(minusQuantity);
+
+	sprintf(query, "UPDATE cart SET quantity = quantity - %d WHERE productName = '%s'", stoi(minusQuantity), productName);
+	query_stat = mysql_query(connection, query);
+
+	sprintf(query, "UPDATE product SET quantity = quantity + %d WHERE productName = '%s'", stoi(minusQuantity), productName);
+	query_stat = mysql_query(connection, query);
+
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+	system("cls");
+	CartList();
+	cout << "카트 내 품목 삭제가 완료 되었습니다." << endl;
+	Sleep(2000);
+	cart_Count--;
+	mysql_close(connection);
+	return 0;
+}
+
+int buy() {
+	system("cls");
+	if (keyControl() == TAB) {
+		return 0;
+	}
+}
+
 //cashier title 출력하기
 void cashierTitle() {
 	int x = 18, y = 7;
@@ -900,12 +982,14 @@ int cashierMenu() {
 	gotoxy(x, y + 2);	//36, 19
 	cout << "카트 삭제" << endl;
 	gotoxy(x, y + 3);	//36, 20
-	cout << "구     매" << endl;
+	cout << "수량 변경" << endl;
 	gotoxy(x, y + 4);	//36, 21
-	cout << "환     불" << endl;
+	cout << "구     매" << endl;
 	gotoxy(x, y + 5);	//36, 22
+	cout << "환     불" << endl;
+	gotoxy(x, y + 6);
 	cout << "종     료" << endl;
-	gotoxy(x - 6, y + 6);	//36, 25
+	gotoxy(x - 6, y + 7);	//36, 25
 	cout << "---------------------" << endl << endl;
 
 	//메뉴선택
@@ -922,20 +1006,20 @@ int cashierMenu() {
 			else if (y == 12) {	//맨 위 -> 맨 아래로 이동
 				gotoxy(x - 2, y);
 				cout << " ";
-				y = 17;
+				y = 18;
 				gotoxy(x - 2, y);
 				cout << ">";
 			}
 			break;
 
 		case DOWN:	//↓를 눌렸을 경우
-			if (y < 17) {	//y는 17~24사이만 이동 -> 24보다 작아야함
+			if (y < 18) {	//y는 17~24사이만 이동 -> 24보다 작아야함
 				gotoxy(x - 2, y);
 				cout << " ";
 				gotoxy(x - 2, ++y);	//아래쪽으로 1칸 이동후
 				cout << ">";
 			}
-			else if (y == 17) {	//맨 아래 -> 맨 위로 이동
+			else if (y == 18) {	//맨 아래 -> 맨 위로 이동
 				gotoxy(x - 2, y);
 				cout << " ";
 				y = 12;
@@ -959,10 +1043,11 @@ void cashierMain() {
 		int select = cashierMenu();
 		if (select == 0) productList();
 		else if (select == 1) addShoppingCart();
-		//else if (select == 2) delShoppingCart();
-		//else if (select == 3) buy();
-		//else if (select == 4) refund();
-		else if (select == 5) {
+		else if (select == 2) delShoppingCart();
+		else if (select == 3) updateShoppingCart();
+		else if (select == 4) buy();
+		//else if (select == 5) refund();
+		else if (select == 6) {
 			gotoxy(0, 27); break;
 		}
 	}
