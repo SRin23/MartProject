@@ -66,8 +66,8 @@ int main() {
 	//mainTitle();
 	//Sleep(2000);
 	//managerMain();
-	//cashierMain();
-	loginMain();
+	cashierMain();
+	//loginMain();
 	return 0;
 }
 
@@ -753,7 +753,7 @@ void managerMain() {
 
 //-------------------------------------------------- CASHIER -----------------------------------------------------
 
-//카트 담긴 품목 리스트
+//카트 담긴 품목 리스트 
 int CartList() {
 	system("cls");
 	MYSQL_RES* sql_result;
@@ -789,12 +789,15 @@ int CartList() {
 	mysql_free_result(sql_result);
 }
 
-//카트에 물품 추가 
+//카트에 물품 추가 => 소비자 가격 끌어오기
 int addShoppingCart() {
 	selectQuery();
 	char productName[30];
-	char customerPrice[10];
+	int customerPrice;
 	char quantity[10];
+	MYSQL_RES* sql_result;
+	MYSQL_ROW sql_row;
+	mysql_init(&conn);
 
 	mysql_init(&conn);
 
@@ -812,7 +815,6 @@ int addShoppingCart() {
 
 	printf("제품명 : ");
 	fgets(productName, 30, stdin);
-	//입력받은 문자열의 끝 부분 공백을 지워서 그 결과를 돌려주는 역할
 	CHOP(productName);
 
 	printf("제품수량 : ");
@@ -820,15 +822,38 @@ int addShoppingCart() {
 	CHOP(quantity);
 
 	//제품가격 -> product table에서 가져오기
-
-	//db에서 작성
-	//sprint : query에 "insert into login values ('%s', '%s')", name, passwor문장을 저장
-	sprintf(query, "insert into product (productName, customerPrice, quantity) values ('%s', '%d', '%d')", productName, stoi(customerPrice), stoi(quantity));
-	query_stat = mysql_query(connection, query);
+	query_stat = mysql_query(connection, "select * from product");
 	if (query_stat != 0) {
 		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		Sleep(2000);
 		return 1;
 	}
+
+	sql_result = mysql_store_result(connection);
+
+	while ((sql_row = mysql_fetch_row(sql_result)) != NULL) {
+		if (!strcmp(sql_row[0], productName)) {
+			customerPrice = stoi(sql_row[2]);
+			sprintf(query, "insert into cart (productName, customerPrice, quantity) values ('%s', '%d', '%d')", productName, customerPrice, stoi(quantity));
+			query_stat = mysql_query(connection, query);
+			
+			sprintf(query, "UPDATE product SET quantity = quantity- %d WHERE productName = '%s'", stoi(quantity), productName);
+			query_stat = mysql_query(connection, query);
+			
+			if (query_stat != 0) {
+				fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+				Sleep(2000);
+				return 1;
+			}
+		}
+	}
+
+	if (sql_result == NULL) {
+		cout << "Empty!!" << endl;
+	}
+	mysql_free_result(sql_result);
+
+	
 	system("cls");
 	CartList();
 	cout << "카트 담기가 완료 되었습니다." << endl;
@@ -933,7 +958,7 @@ void cashierMain() {
 	while (true) {
 		int select = cashierMenu();
 		if (select == 0) productList();
-		//else if (select == 1) addShoppingCart();
+		else if (select == 1) addShoppingCart();
 		//else if (select == 2) delShoppingCart();
 		//else if (select == 3) buy();
 		//else if (select == 4) refund();
