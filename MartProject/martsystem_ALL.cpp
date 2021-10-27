@@ -28,7 +28,7 @@ using namespace std;
 
 void loginMain();
 void managerMain();
-void cashierMain();
+void customerMain();
 void init();
 void gotoxy(int x, int y);
 int keyControl();
@@ -63,11 +63,11 @@ void mainTitle()
 }
 
 int main() {
-	//mainTitle();
-	//Sleep(2000);
+	mainTitle();
+	Sleep(2000);
 	//managerMain();
-	cashierMain();
-	//loginMain();
+	//customerMain();
+	loginMain();
 	return 0;
 }
 
@@ -175,7 +175,7 @@ int signin() {
 					return 0;
 				}
 				else if (!strcmp("C", sql_row[3])) {
-					cashierMain();
+					customerMain();
 					return 0;
 				}
 				else {
@@ -938,15 +938,150 @@ int updateShoppingCart() {
 	return 0;
 }
 
-int buy() {
+//전체 삭제
+int dropAll() {
+	mysql_init(&conn);
+
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
+	mysql_set_character_set(connection, "euckr");
+	if (connection == NULL) {
+		fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+	sprintf(query, "delete from cart");
+	query_stat = mysql_query(connection, query);
+	if (query_stat != 0) {
+		fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		return 1;
+	}
 	system("cls");
-	if (keyControl() == TAB) {
-		return 0;
+	cout << "카트에 물품이 없습니다." << endl;
+	Sleep(2000);
+	cart_Count = 0;
+	mysql_close(connection);
+	return 0;
+}
+
+int buyCheck() {
+	system("cls");
+	CartList();
+	cout << "구매하시겠습니까?" << endl;
+	int x = 2, y = 15;
+	//메뉴출력
+	gotoxy(x - 2, y);	//34, 17
+	cout << "> YES" << endl;
+	gotoxy(x, y + 1);	//36, 18
+	cout << "NO" << endl;
+	
+	//메뉴선택
+	while (true) {	//무한 반복
+		int n = keyControl();
+		switch (n) {
+		case UP:	//↑를 눌렸을 경우
+			if (y > 15) {	//y는 17~24사이만 이동 -> 17보다 커야함
+				gotoxy(x - 2, y);	//게임 시작에 있던 >
+				cout << " ";	//지우고
+				gotoxy(x - 2, --y);	//위쪽으로 1칸 이동후
+				cout << ">";	//다시 그리기
+			}
+			else if (y == 15) {	//맨 위 -> 맨 아래로 이동
+				gotoxy(x - 2, y);
+				cout << " ";
+				y = 16;
+				gotoxy(x - 2, y);
+				cout << ">";
+			}
+			break;
+
+		case DOWN:	//↓를 눌렸을 경우
+			if (y < 16) {	//y는 17~24사이만 이동 -> 24보다 작아야함
+				gotoxy(x - 2, y);
+				cout << " ";
+				gotoxy(x - 2, ++y);	//아래쪽으로 1칸 이동후
+				cout << ">";
+			}
+			else if (y == 16) {	//맨 아래 -> 맨 위로 이동
+				gotoxy(x - 2, y);
+				cout << " ";
+				y = 15;
+				gotoxy(x - 2, y);
+				cout << ">";
+			}
+			break;
+
+		case ENTER:	//엔터 -> 선택했을 경우
+			return y - 15;	//y-17를 하여 각 값에 대한 1, 2, 3...값을 받을 수 있다. -> 값 선택
+		}
 	}
 }
 
-//cashier title 출력하기
-void cashierTitle() {
+int deleteCheck() {
+	cout << "품목을 삭제하시겠습니까?" << endl;
+	int x = 2, y = 15;
+	//메뉴출력
+	gotoxy(x - 2, y);	//34, 17
+	cout << "> YES" << endl;
+	gotoxy(x, y + 1);	//36, 18
+	cout << "NO" << endl;
+
+	while (true) {	//무한 반복
+		int n = keyControl();
+		switch (n) {
+		case UP:	//↑를 눌렸을 경우
+			if (y > 15) {	//y는 17~24사이만 이동 -> 17보다 커야함
+				gotoxy(x - 2, y);	//게임 시작에 있던 >
+				cout << " ";	//지우고
+				gotoxy(x - 2, --y);	//위쪽으로 1칸 이동후
+				cout << ">";	//다시 그리기
+			}
+			else if (y == 15) {	//맨 위 -> 맨 아래로 이동
+				gotoxy(x - 2, y);
+				cout << " ";
+				y = 16;
+				gotoxy(x - 2, y);
+				cout << ">";
+			}
+			break;
+
+		case DOWN:	//↓를 눌렸을 경우
+			if (y < 16) {	//y는 17~24사이만 이동 -> 24보다 작아야함
+				gotoxy(x - 2, y);
+				cout << " ";
+				gotoxy(x - 2, ++y);	//아래쪽으로 1칸 이동후
+				cout << ">";
+			}
+			else if (y == 16) {	//맨 아래 -> 맨 위로 이동
+				gotoxy(x - 2, y);
+				cout << " ";
+				y = 15;
+				gotoxy(x - 2, y);
+				cout << ">";
+			}
+			break;
+
+		case ENTER:	//엔터 -> 선택했을 경우
+			return y - 15;	//y-17를 하여 각 값에 대한 1, 2, 3...값을 받을 수 있다. -> 값 선택
+		}
+	}
+}
+
+void buy() {
+	if (buyCheck() == 0) {
+
+	}
+	else {
+		system("cls");
+		if (deleteCheck() == 0) dropAll();
+		else cout << "현재까지의 상품을 저장합니다." << endl;
+	}
+}
+
+int refund() {
+	return 0;
+}
+
+//customer title 출력하기
+void customerTitle() {
 	int x = 18, y = 7;
 	gotoxy(5, y - 3); cout << "============================================================================================================";
 	gotoxy(x, y++); cout << "##       ##        #        #######     ########";
@@ -967,7 +1102,7 @@ void cashierTitle() {
 }
 
 //메뉴설정
-int cashierMenu() {
+int customerMenu() {
 	system("cls");
 	int x = 56;
 	int y = 12;
@@ -1034,19 +1169,19 @@ int cashierMenu() {
 	}
 }
 
-void cashierMain() {
+void customerMain() {
 	system("cls");
-	cashierTitle();
+	customerTitle();
 	Sleep(2000);
 	init();
 	while (true) {
-		int select = cashierMenu();
+		int select = customerMenu();
 		if (select == 0) productList();
 		else if (select == 1) addShoppingCart();
 		else if (select == 2) delShoppingCart();
 		else if (select == 3) updateShoppingCart();
 		else if (select == 4) buy();
-		//else if (select == 5) refund();
+		else if (select == 5) refund();
 		else if (select == 6) {
 			gotoxy(0, 27); break;
 		}
