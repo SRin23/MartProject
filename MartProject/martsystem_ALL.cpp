@@ -27,8 +27,7 @@
 using namespace std;
 
 void loginMain();
-void managerMain();
-void customerMain();
+int selectQuery();
 int YN_Check(int x, int y);
 void init();
 void gotoxy(int x, int y);
@@ -39,6 +38,49 @@ static int cart_Count = 0;
 MYSQL* connection = NULL, conn;
 int query_stat;
 char query[255];
+
+
+//--------------------------------------------------CLASS------------------------------------------------------
+class Manager {
+public:
+	int productList();
+	int m_insertQuery();
+	int m_deleteQuery();
+	int updateQueryProductName();
+	int updateQueryProductPrice();
+	int updateQueryCustomerPrice();
+	int updateQueryAll();
+	void updateQueryAllCheck();
+	int m_updateMenu();
+	int m_updateQuery();
+	int m_warehousing();
+	int m_release();
+	void managerTitle();
+	int managerMenu();
+	int totalSelect();
+	void managerMain();
+};
+
+class Customer {
+public:
+	int CartList();
+	int CartListMenu();
+	int addShoppingCart();
+	int delCartProduct();
+	int deleteAll();
+	int deleteCartMenu();
+	void deleteCart();
+	int updatePlusCartQuantity();
+	int updateMinusCartQuantity();
+	int updateCartMenu();
+	void UpdateCart();
+	int buy();
+	int refund();
+	int historyList();
+	void customerTitle();
+	int customerMenu();
+	void customerMain();
+};
 
 //-------------------------------------------------- MAIN -----------------------------------------------------
 //main titleÃâ·Â
@@ -316,11 +358,13 @@ int signin() {
 				cout << sql_row[0] << "´Ô, ·Î±×ÀÎ µÇ¾ú½À´Ï´Ù." << endl;
 				Sleep(2000);
 				if (!strcmp("M", sql_row[3])) {
-					managerMain();
+					Manager* m = new Manager();
+					m->managerMain();
 					return 0;
 				}
 				else if (!strcmp("C", sql_row[3])) {
-					customerMain();
+					Customer* c = new Customer();
+					c->customerMain();
 					return 0;
 				}
 				else {
@@ -470,55 +514,10 @@ void loginMain() {
 	}
 }
 
-//-------------------------------------------------- MANAGER -----------------------------------------------------
-//µ¥ÀÌÅÍ Ãâ·Â
-int selectQuery() {
-	system("cls");
-	MYSQL_RES* sql_result;
-	MYSQL_ROW sql_row;
-	int listCount = 1;
-	mysql_init(&conn);
-
-	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);   //±è¼¼¸° ¹Ùº¸ ¶Ë°³ ¸Þ·Õ ¾ß¾ß selfish 
-	mysql_set_character_set(connection, "euckr");
-	if (connection == NULL) {
-		//fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
-		printf("µ¥ÀÌÅÍº£ÀÌ½º¿ÍÀÇ ¿¬°áÀÌ ²÷¾îÁ³½À´Ï´Ù.");
-		return 1;
-	}
-
-	query_stat = mysql_query(connection, "select * from product");
-	if (query_stat != 0) {
-		printf("°ªÀ» ºÒ·¯¿Ã ¼ö ¾ø½À´Ï´Ù.(select)");
-		//fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
-		return 1;
-	}
-
-	sql_result = mysql_store_result(connection);
-	if (sql_result == NULL) {
-		cout << "Empty!!" << endl;
-	}
-	else {
-		printf("¦®¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¯\n");
-		printf("¦­ %3s ¦­ %-16s ¦­ %8s ¦­ %9s ¦­ %8s ¦­\n", "ID", "Á¦Ç°¸í", "Á¦Ç°°¡°Ý", "¼ÒºñÀÚ°¡°Ý", "¼ö·®");
-		printf("¦²¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦´\n");
-		while ((sql_row = mysql_fetch_row(sql_result)) != NULL) {
-			if (stoi(sql_row[3]) == 0) {
-				sprintf(query, "delete from product where productName='%s'", sql_row[0]);
-				query_stat = mysql_query(connection, query);
-				continue;
-			}
-			printf("¦­ %3d ¦­ %-16s ¦­ %8d ¦­ %10d ¦­ %8d ¦­\n", listCount++, sql_row[0], stoi(sql_row[1]), stoi(sql_row[2]), stoi(sql_row[3]));	//Ãâ·Â
-		}
-		printf("¦±¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦°\n");
-	}
-	
-	//mysql_store_result¿¡ »ç¿ëµÈ ¸Þ¸ð¸®¸¦ ÇìÃ¼½ÃÅ´-> ¸¶Ä¡ mallocÀÇ free¿ªÇÒ
-	mysql_free_result(sql_result);
-}
+//------------------------------------------------ MANAGER ÇÔ¼ö-----------------------------------------------------
 
 //Ç°¸ñ ¸®½ºÆ® Ãâ·Â
-int productList() {
+int Manager::productList() {
 	system("cls");
 	selectQuery();
 	if (keyControl() == TAB) {
@@ -527,7 +526,7 @@ int productList() {
 }
 
 //managerÇ°¸ñ Ãß°¡
-int m_insertQuery() {
+int Manager::m_insertQuery() {
 	char productName[30];
 	char productPrice[10];
 	char customerPrice[10];
@@ -639,7 +638,7 @@ int m_insertQuery() {
 }
 
 //managerÇ°¸ñ »èÁ¦
-int m_deleteQuery() {
+int Manager::m_deleteQuery() {
 	char productName[30];
 	bool deleteCheck = 0;
 	MYSQL_RES* sql_result;
@@ -705,7 +704,7 @@ int m_deleteQuery() {
 }
 
 //managerÇ°¸ñ ¼öÁ¤
-int updateQueryProductName() {
+int Manager::updateQueryProductName() {
 	char productName[30];
 	char changeName[30];
 	bool updateCheck = 0;
@@ -772,7 +771,7 @@ int updateQueryProductName() {
 	}
 	
 }
-int updateQueryProductPrice() {
+int Manager::updateQueryProductPrice() {
 	char productName[30];
 	char changeProductPrice[8];
 	bool updateCheck = 0;
@@ -839,7 +838,7 @@ int updateQueryProductPrice() {
 		}
 	}
 }
-int updateQueryCustomerPrice() {
+int Manager::updateQueryCustomerPrice() {
 	char productName[30];
 	char changeCustomerPrice[8];
 	bool updateCheck = 0;
@@ -905,7 +904,7 @@ int updateQueryCustomerPrice() {
 		}
 	}
 }
-int updateQueryAll() {
+int Manager::updateQueryAll() {
 	char productName[30];
 	char changeProductName[30];
 	char changeProductPrice[8];
@@ -982,7 +981,7 @@ int updateQueryAll() {
 		}
 	}
 }
-void updateQueryAllCheck() {
+void Manager::updateQueryAllCheck() {
 	system("cls");
 	cout << "Ç°¸ñÀ» ÀüÃ¼ ¼öÁ¤ ÇÏ½Ã·Á¸é YES" << endl;
 	cout << "Ç°¸ñÀ» ÀüÃ¼ »èÁ¦ ÇÏ½Ã·Á¸é NO" << endl;
@@ -996,7 +995,7 @@ void updateQueryAllCheck() {
 }
 
 //manager¸Þ´º¼³Á¤
-int m_updateMenu() {
+int Manager::m_updateMenu() {
 	system("cls");
 	int x = 52;
 	int y = 12;
@@ -1058,7 +1057,7 @@ int m_updateMenu() {
 		}
 	}
 }
-int m_updateQuery() {
+int Manager::m_updateQuery() {
 	system("cls");
 	
 	while (true) {
@@ -1076,7 +1075,7 @@ int m_updateQuery() {
 }
 
 //managerÀÔ°í
-int m_warehousing() {
+int Manager::m_warehousing() {
 	char productName[30];
 	char addAmount[10];
 	bool warehousingCheck= 0;
@@ -1145,7 +1144,7 @@ int m_warehousing() {
 	return 0;
 }
 //managerÃâ°í
-int m_release() {
+int Manager::m_release() {
 	char productName[30];
 	char minusAmount[10];
 
@@ -1216,7 +1215,7 @@ int m_release() {
 }
 
 //manager title Ãâ·ÂÇÏ±â
-void managerTitle() {
+void Manager::managerTitle() {
 	int x = 9, y = 7;
 	gotoxy(5, y - 3); cout << "============================================================================================================";
 	gotoxy(x, y++); cout << "##       ##        #        #######     ########";
@@ -1237,7 +1236,7 @@ void managerTitle() {
 }
 
 //manager¸Þ´º¼³Á¤
-int managerMenu() {
+int Manager::managerMenu() {
 	int x = 56;
 	int y = 12;
 
@@ -1303,7 +1302,7 @@ int managerMenu() {
 	}
 }
 
-int totalSelect() {
+int Manager::totalSelect() {
 	MYSQL_RES* sql_result;
 	MYSQL_ROW sql_row;
 
@@ -1339,7 +1338,7 @@ int totalSelect() {
 }
 
 //manager¸ÞÀÎ
-void managerMain() {
+void Manager::managerMain() {
 	system("cls");
 	managerTitle();
 	Sleep(2000);
@@ -1367,9 +1366,10 @@ void managerMain() {
 }
 
 
-//-------------------------------------------------- CUSTOMER -----------------------------------------------------
+//--------------------------------------------- CUSTOMER ÇÔ¼ö -----------------------------------------------------
+
 //Ä«Æ® ´ã±ä Ç°¸ñ ¸®½ºÆ® 
-int CartList() {
+int Customer::CartList() {
 	system("cls");
 	MYSQL_RES* sql_result;
 	MYSQL_ROW sql_row;
@@ -1414,7 +1414,8 @@ int CartList() {
 	mysql_free_result(sql_result);
 }
 
-int CartListMenu() {
+//Àå¹Ù±¸´Ï ¸®½ºÆ®
+int Customer::CartListMenu() {
 	system("cls");
 	CartList();
 	if (keyControl() == TAB) {
@@ -1423,7 +1424,7 @@ int CartListMenu() {
 }
 
 //Ä«Æ®¿¡ ¹°Ç° Ãß°¡ => ¼ÒºñÀÚ °¡°Ý ²ø¾î¿À±â
-int addShoppingCart() {
+int Customer::addShoppingCart() {
 	char productName[30];
 	int customerPrice;
 	char quantity[10];
@@ -1547,59 +1548,8 @@ int addShoppingCart() {
 
 }
 
-//ÀüÃ¼ »èÁ¦ Ã¼Å© => ÇØ¾ßÇÔ
-int YN_Check(int x, int y) {
-	int cx = x;
-	int cy = y;
-	//¸Þ´ºÃâ·Â
-	gotoxy(cx - 2, cy);	//34, 17
-	cout << "> YES" << endl;
-	gotoxy(cx, cy + 1);	//36, 18
-	cout << "NO" << endl;
-
-	while (true) {	//¹«ÇÑ ¹Ýº¹
-		int n = keyControl();
-		switch (n) {
-		case UP:	//¡è¸¦ ´­·ÈÀ» °æ¿ì
-			if (cy > y) {	//y´Â 17~24»çÀÌ¸¸ ÀÌµ¿ -> 17º¸´Ù Ä¿¾ßÇÔ
-				gotoxy(cx - 2, cy);	//°ÔÀÓ ½ÃÀÛ¿¡ ÀÖ´ø >
-				cout << " ";	//Áö¿ì°í
-				gotoxy(cx - 2, --cy);	//À§ÂÊÀ¸·Î 1Ä­ ÀÌµ¿ÈÄ
-				cout << ">";	//´Ù½Ã ±×¸®±â
-			}
-			else if (cy == y) {	//¸Ç À§ -> ¸Ç ¾Æ·¡·Î ÀÌµ¿
-				gotoxy(cx - 2, cy);
-				cout << " ";
-				cy = y + 1;
-				gotoxy(cx - 2, cy);
-				cout << ">";
-			}
-			break;
-
-		case DOWN:	//¡é¸¦ ´­·ÈÀ» °æ¿ì
-			if (cy < y + 1) {	//y´Â 17~24»çÀÌ¸¸ ÀÌµ¿ -> 24º¸´Ù ÀÛ¾Æ¾ßÇÔ
-				gotoxy(cx - 2, cy);
-				cout << " ";
-				gotoxy(cx - 2, ++cy);	//¾Æ·¡ÂÊÀ¸·Î 1Ä­ ÀÌµ¿ÈÄ
-				cout << ">";
-			}
-			else if (cy == y + 1) {	//¸Ç ¾Æ·¡ -> ¸Ç À§·Î ÀÌµ¿
-				gotoxy(cx - 2, cy);
-				cout << " ";
-				cy = y;
-				gotoxy(cx - 2, cy);
-				cout << ">";
-			}
-			break;
-
-		case ENTER:	//¿£ÅÍ -> ¼±ÅÃÇßÀ» °æ¿ì
-			return cy - y;	//y-17¸¦ ÇÏ¿© °¢ °ª¿¡ ´ëÇÑ 1, 2, 3...°ªÀ» ¹ÞÀ» ¼ö ÀÖ´Ù. -> °ª ¼±ÅÃ
-		}
-	}
-}
-
 //Ç°¸ñ ¾Æ¿¹ »èÁ¦
-int delCartProduct() {
+int Customer::delCartProduct() {
 	char productName[30];
 	int customerPrice;
 	int quantity;
@@ -1686,7 +1636,7 @@ int delCartProduct() {
 }
 
 //ÀüÃ¼ »èÁ¦ => ¼ö·® »èÁ¦ ±¸Çö ÇÊ¿ä
-int deleteAll() {
+int Customer::deleteAll() {
 	int customerPrice;
 	int quantity;
 
@@ -1767,7 +1717,7 @@ int deleteAll() {
 }
  
 //Ä«Æ® »èÁ¦ ¸Þ´º
-int deleteCartMenu() {
+int Customer::deleteCartMenu() {
 	system("cls");
 	int x = 56, y = 12;
 	//¸Þ´ºÃâ·Â
@@ -1824,7 +1774,7 @@ int deleteCartMenu() {
 }
 
 //Ä«Æ® »èÁ¦
-void deleteCart() {
+void Customer::deleteCart() {
 	switch (deleteCartMenu()) {
 	case 0: delCartProduct(); break;
 	case 2: deleteAll(); break;
@@ -1833,7 +1783,7 @@ void deleteCart() {
 }
 
 //¼ö·®Ãß°¡
-int updatePlusCartQuantity() {
+int Customer::updatePlusCartQuantity() {
 	CartList();
 	char productName[30];
 	char minusQuantity[10];
@@ -1915,7 +1865,7 @@ int updatePlusCartQuantity() {
 }
 
 //¼ö·® »èÁ¦
-int updateMinusCartQuantity() {
+int Customer::updateMinusCartQuantity() {
 	CartList();
 	char productName[30];
 	char minusQuantity[10];
@@ -1997,7 +1947,7 @@ int updateMinusCartQuantity() {
 }
 
 //Ä«Æ® º¯°æ ¸Þ´º
-int updateCartMenu() {
+int Customer::updateCartMenu() {
 	system("cls");
 	int x = 56, y = 12;
 	//¸Þ´ºÃâ·Â
@@ -2054,7 +2004,7 @@ int updateCartMenu() {
 }
 
 //Ä«Æ® ¹°Ç° º¯°æ
-void UpdateCart() {
+void Customer::UpdateCart() {
 	switch (updateCartMenu()) {
 	case 0: updatePlusCartQuantity(); break;
 	case 2: updateMinusCartQuantity(); break;
@@ -2062,7 +2012,8 @@ void UpdateCart() {
 	}
 }
 
-int buy() {
+//±¸¸Å
+int Customer::buy() {
 	system("cls");
 	int cart_Total = 0;
 	MYSQL_RES* sql_result;
@@ -2198,7 +2149,8 @@ int buy() {
 	}
 }
 
-int refund() {
+//È¯ºÒ
+int Customer::refund() {
 	char productName[30];
 	char refund_reason[100];
 	MYSQL_RES* sql_result;
@@ -2207,6 +2159,7 @@ int refund() {
 
 	while (true) {
 		system("cls");
+		refundCheck = 0;
 		mysql_init(&conn);
 
 		connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
@@ -2262,15 +2215,18 @@ int refund() {
 				Sleep(2000);
 			}
 			else {
+				cout << "scene4" << endl;
 				while ((sql_row = mysql_fetch_row(sql_result)) != NULL) {
 					//printf("%s, %s, %d\n", sql_row[0], sql_row[2], stoi(sql_row[4]));
 					//refundCheck = 1;
+					cout << "scene3" << endl;
 					if (!strcmp(sql_row[0], "buy")) {
 						//cout << "CHECK" << endl;
 						refundCheck = 2;
+						cout << "scene2" << endl;
 						if (!strcmp(sql_row[2], productName)) {
-							
-							sprintf(query, "update usage_history set history = 'refund', date = now(), refund_reason='%s' where productName='%s'", refund_reason, productName);
+							cout << "scene1" << endl;
+							sprintf(query, "update usage_history set history = 'refund', date = now(), refund_reason='%s' where productName='%s' limit 1", refund_reason, productName);
 							query_stat = mysql_query(connection, query);
 							if (query_stat != 0) {
 								//printf("\n\nÈ¯ºÒ ³»¿ªÀ» Ãß°¡ÇÒ ¼ö ¾ø½À´Ï´Ù.");
@@ -2297,15 +2253,18 @@ int refund() {
 							}
 							refundCheck = 3;
 							break;
-							
 						}
+						cout << "break1" << endl;
 					}
+					cout << "break2" << endl;
 				}
+				cout << "break3" << endl;
 			}
+			cout << "break4" << endl;
 
 			switch (refundCheck) {
 			case 1: 
-				cout << "±¸¸Å ÀÌ·ÂÀÌ ¾ø½À´Ï´Ù." << endl; 
+				cout << "ÁÖ¹® ÀÌ·ÂÀÌ ¾ø½À´Ï´Ù." << endl; 
 				cout << "3ÃÊµÚ ÀÚµ¿À¸·Î ¸ÞÀÎÈ­¸éÀ¸·Î ÀÌµ¿ÇÕ´Ï´Ù..." << endl;
 				Sleep(3000);
 				return 0;
@@ -2313,7 +2272,8 @@ int refund() {
 				cout << "3ÃÊµÚ ÀÚµ¿À¸·Î ¸ÞÀÎÈ­¸éÀ¸·Î ÀÌµ¿ÇÕ´Ï´Ù..." << endl;
 				Sleep(3000);
 				return 0;
-			case 3: cout << "È¯ºÒÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù." << endl; Sleep(3000); break;
+			case 3: cout << "È¯ºÒÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù." << endl; 
+				Sleep(1000); break;
 			}
 
 			system("cls");
@@ -2332,14 +2292,18 @@ int refund() {
 					cout << "Empty!!" << endl;
 				}
 				else {
-					printf("¦®¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¯\n");
-					printf("¦­ %8s ¦­ %16s ¦­ %-16s ¦­ %8s ¦­ %8s ¦­\n", "±¸¸Å¿©ºÎ", "³¯Â¥", "Á¦Ç°¸í", "°¡°Ý", "¼ö·®");
-					printf("¦²¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦´\n");
+					printf("¦®¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¯\n");
+					printf("¦­ %8s ¦­ %10s ¦­ %16s ¦­ %8s ¦­ %48s ¦­\n", "ÁÖ¹®", "³¯Â¥", "Á¦Ç°¸í", "¼ö·®", "È¯ºÒ »çÀ¯");
+					printf("¦²¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦´\n");
 					while ((sql_row = mysql_fetch_row(sql_result)) != NULL) {
-						printf("¦­ %8s ¦­ %16s ¦­ %-16s ¦­ %8d ¦­ %8d ¦­\n", sql_row[0], sql_row[1], sql_row[2], stoi(sql_row[3]), stoi(sql_row[4]));	//Ãâ·Â
+						if (sql_row[5] == NULL) {
+							printf("¦­ %8s ¦­ %10s ¦­ %16s ¦­ %8d ¦­ %48s ¦­\n", sql_row[0], sql_row[1], sql_row[2], stoi(sql_row[4]), "");	//Ãâ·Â
+						}
+						else {
+							printf("¦­ %8s ¦­ %10s ¦­ %16s ¦­ %8d ¦­ %48s ¦­\n", sql_row[0], sql_row[1], sql_row[2], stoi(sql_row[4]), sql_row[5]);	//Ãâ·Â
+						}
 					}
-					printf("¦±¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦°\n");
-
+					printf("¦±¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦°\n");
 				}
 			}
 			else {
@@ -2362,7 +2326,8 @@ int refund() {
 	}
 }
 
-int historyList() {
+//ÁÖ¹® ³»¿ª ¸®½ºÆ®
+int Customer::historyList() {
 	system("cls");
 	MYSQL_RES* sql_result;
 	MYSQL_ROW sql_row;
@@ -2406,7 +2371,7 @@ int historyList() {
 }
 
 //customer title Ãâ·ÂÇÏ±â
-void customerTitle() {
+void Customer::customerTitle() {
 	int x = 10, y = 7;
 	gotoxy(5, y - 3); cout << "============================================================================================================";
 	gotoxy(x, y++); cout << "##       ##        #        #######     ########";
@@ -2427,7 +2392,7 @@ void customerTitle() {
 }
 
 //¸Þ´º¼³Á¤
-int customerMenu() {
+int Customer::customerMenu() {
 	system("cls");
 	int x = 56;
 	int y = 12;
@@ -2496,7 +2461,8 @@ int customerMenu() {
 	}
 }
 
-void customerMain() {
+//°í°´ ¸ÞÀÎ
+void Customer::customerMain() {
 	system("cls");
 	//customerTitle();
 	//Sleep(2000);
@@ -2517,6 +2483,104 @@ void customerMain() {
 }
 
 //--------------------------------------------------°øÅë ÇÔ¼ö-----------------------------------------------------
+//µ¥ÀÌÅÍ Ãâ·Â
+int selectQuery() {
+	system("cls");
+	MYSQL_RES* sql_result;
+	MYSQL_ROW sql_row;
+	int listCount = 1;
+	mysql_init(&conn);
+
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);   //±è¼¼¸° ¹Ùº¸ ¶Ë°³ ¸Þ·Õ ¾ß¾ß selfish 
+	mysql_set_character_set(connection, "euckr");
+	if (connection == NULL) {
+		//fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
+		printf("µ¥ÀÌÅÍº£ÀÌ½º¿ÍÀÇ ¿¬°áÀÌ ²÷¾îÁ³½À´Ï´Ù.");
+		return 1;
+	}
+
+	query_stat = mysql_query(connection, "select * from product");
+	if (query_stat != 0) {
+		printf("°ªÀ» ºÒ·¯¿Ã ¼ö ¾ø½À´Ï´Ù.(select)");
+		//fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+
+	sql_result = mysql_store_result(connection);
+	if (sql_result == NULL) {
+		cout << "Empty!!" << endl;
+	}
+	else {
+		printf("¦®¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦³¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¯\n");
+		printf("¦­ %3s ¦­ %-16s ¦­ %8s ¦­ %9s ¦­ %8s ¦­\n", "ID", "Á¦Ç°¸í", "Á¦Ç°°¡°Ý", "¼ÒºñÀÚ°¡°Ý", "¼ö·®");
+		printf("¦²¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¶¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦´\n");
+		while ((sql_row = mysql_fetch_row(sql_result)) != NULL) {
+			if (stoi(sql_row[3]) == 0) {
+				sprintf(query, "delete from product where productName='%s'", sql_row[0]);
+				query_stat = mysql_query(connection, query);
+				continue;
+			}
+			printf("¦­ %3d ¦­ %-16s ¦­ %8d ¦­ %10d ¦­ %8d ¦­\n", listCount++, sql_row[0], stoi(sql_row[1]), stoi(sql_row[2]), stoi(sql_row[3]));	//Ãâ·Â
+		}
+		printf("¦±¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦µ¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦¬¦°\n");
+	}
+
+	//mysql_store_result¿¡ »ç¿ëµÈ ¸Þ¸ð¸®¸¦ ÇìÃ¼½ÃÅ´-> ¸¶Ä¡ mallocÀÇ free¿ªÇÒ
+	mysql_free_result(sql_result);
+}
+
+
+//ÀüÃ¼ »èÁ¦ Ã¼Å© => ÇØ¾ßÇÔ
+int YN_Check(int x, int y) {
+	int cx = x;
+	int cy = y;
+	//¸Þ´ºÃâ·Â
+	gotoxy(cx - 2, cy);	//34, 17
+	cout << "> YES" << endl;
+	gotoxy(cx, cy + 1);	//36, 18
+	cout << "NO" << endl;
+
+	while (true) {	//¹«ÇÑ ¹Ýº¹
+		int n = keyControl();
+		switch (n) {
+		case UP:	//¡è¸¦ ´­·ÈÀ» °æ¿ì
+			if (cy > y) {	//y´Â 17~24»çÀÌ¸¸ ÀÌµ¿ -> 17º¸´Ù Ä¿¾ßÇÔ
+				gotoxy(cx - 2, cy);	//°ÔÀÓ ½ÃÀÛ¿¡ ÀÖ´ø >
+				cout << " ";	//Áö¿ì°í
+				gotoxy(cx - 2, --cy);	//À§ÂÊÀ¸·Î 1Ä­ ÀÌµ¿ÈÄ
+				cout << ">";	//´Ù½Ã ±×¸®±â
+			}
+			else if (cy == y) {	//¸Ç À§ -> ¸Ç ¾Æ·¡·Î ÀÌµ¿
+				gotoxy(cx - 2, cy);
+				cout << " ";
+				cy = y + 1;
+				gotoxy(cx - 2, cy);
+				cout << ">";
+			}
+			break;
+
+		case DOWN:	//¡é¸¦ ´­·ÈÀ» °æ¿ì
+			if (cy < y + 1) {	//y´Â 17~24»çÀÌ¸¸ ÀÌµ¿ -> 24º¸´Ù ÀÛ¾Æ¾ßÇÔ
+				gotoxy(cx - 2, cy);
+				cout << " ";
+				gotoxy(cx - 2, ++cy);	//¾Æ·¡ÂÊÀ¸·Î 1Ä­ ÀÌµ¿ÈÄ
+				cout << ">";
+			}
+			else if (cy == y + 1) {	//¸Ç ¾Æ·¡ -> ¸Ç À§·Î ÀÌµ¿
+				gotoxy(cx - 2, cy);
+				cout << " ";
+				cy = y;
+				gotoxy(cx - 2, cy);
+				cout << ">";
+			}
+			break;
+
+		case ENTER:	//¿£ÅÍ -> ¼±ÅÃÇßÀ» °æ¿ì
+			return cy - y;	//y-17¸¦ ÇÏ¿© °¢ °ª¿¡ ´ëÇÑ 1, 2, 3...°ªÀ» ¹ÞÀ» ¼ö ÀÖ´Ù. -> °ª ¼±ÅÃ
+		}
+	}
+}
+//ÃÊ±âÈ­¸é ±¸¼º
 void init() {
 	//ÄÜ¼Ö Å©±â Á¤ÇÏ±â
 	system("mode con cols=120 lines=30");
