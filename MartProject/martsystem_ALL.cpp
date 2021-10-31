@@ -179,52 +179,52 @@ void main() {
 //-------------------------------------------------- login -----------------------------------------------------
 
 //Manager, Customer역할 정하기
-int ManagerCustomer() {
-	int x = 2, y = 4;
+int ManagerCustomer(int x, int y) {
+	int cx = x;
+	int cy = y;
 	//메뉴출력
-	gotoxy(x - 2, y);	//34, 17
+	gotoxy(cx - 2, cy);	//34, 17
 	cout << "> Manager" << endl;
-	gotoxy(x, y + 1);	//36, 18
+	gotoxy(cx, cy + 1);	//36, 18
 	cout << "Customer" << endl;
 
-	//메뉴선택
 	while (true) {	//무한 반복
 		int n = keyControl();
 		switch (n) {
 		case UP:	//↑를 눌렸을 경우
-			if (y > 4) {	//y는 17~24사이만 이동 -> 17보다 커야함
-				gotoxy(x - 2, y);	//게임 시작에 있던 >
+			if (cy > y) {	//y는 17~24사이만 이동 -> 17보다 커야함
+				gotoxy(cx - 2, cy);	//게임 시작에 있던 >
 				cout << " ";	//지우고
-				gotoxy(x - 2, --y);	//위쪽으로 1칸 이동후
+				gotoxy(cx - 2, --cy);	//위쪽으로 1칸 이동후
 				cout << ">";	//다시 그리기
 			}
-			else if (y == 4) {	//맨 위 -> 맨 아래로 이동
-				gotoxy(x - 2, y);
+			else if (cy == y) {	//맨 위 -> 맨 아래로 이동
+				gotoxy(cx - 2, cy);
 				cout << " ";
-				y = 5;
-				gotoxy(x - 2, y);
+				cy = y + 1;
+				gotoxy(cx - 2, cy);
 				cout << ">";
 			}
 			break;
 
 		case DOWN:	//↓를 눌렸을 경우
-			if (y < 5) {	//y는 17~24사이만 이동 -> 24보다 작아야함
-				gotoxy(x - 2, y);
+			if (cy < y + 1) {	//y는 17~24사이만 이동 -> 24보다 작아야함
+				gotoxy(cx - 2, cy);
 				cout << " ";
-				gotoxy(x - 2, ++y);	//아래쪽으로 1칸 이동후
+				gotoxy(cx - 2, ++cy);	//아래쪽으로 1칸 이동후
 				cout << ">";
 			}
-			else if (y == 5) {	//맨 아래 -> 맨 위로 이동
-				gotoxy(x - 2, y);
+			else if (cy == y + 1) {	//맨 아래 -> 맨 위로 이동
+				gotoxy(cx - 2, cy);
 				cout << " ";
-				y = 4;
-				gotoxy(x - 2, y);
+				cy = y;
+				gotoxy(cx - 2, cy);
 				cout << ">";
 			}
 			break;
 
 		case ENTER:	//엔터 -> 선택했을 경우
-			return y - 4;	//y-17를 하여 각 값에 대한 1, 2, 3...값을 받을 수 있다. -> 값 선택
+			return cy - y;	//y-17를 하여 각 값에 대한 1, 2, 3...값을 받을 수 있다. -> 값 선택
 		}
 	}
 }
@@ -287,12 +287,18 @@ int signup() {
 		return 0;
 	}
 
-	if (ManagerCustomer() == 0) {
+	// 콘솔 출력창의 정보를 담기 위해서 정의한 구조체
+	CONSOLE_SCREEN_BUFFER_INFO presentCur;
+
+	//현재 콘솔 위치 반환
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &presentCur);
+	if (ManagerCustomer(presentCur.dwCursorPosition.X + 12, presentCur.dwCursorPosition.Y + 1) == 0) {
 		strcpy(role, "M");
 	}
 	else {
 		strcpy(role, "C");
 	}
+	cout << endl;
 
 	sprintf(query, "insert into login_info (name, id, pw, role) values ('%s', '%s', '%s', '%s')", name, id, pw, role);
 	query_stat = mysql_query(connection, query);
@@ -301,8 +307,10 @@ int signup() {
 		printf("입력이 되지 않습니다.(insert)");
 		return 1;
 	}
-	
-	cout <<endl<<endl<< "회원가입이 완료 되었습니다." << endl;
+	//현재 콘솔 위치 반환
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &presentCur);
+	gotoxy(presentCur.dwCursorPosition.X + 44, presentCur.dwCursorPosition.Y + 1);
+	cout <<"회원가입이 완료 되었습니다." << endl;
 	mysql_close(connection);
 
 	if (keyControl() == TAB) {
@@ -1305,6 +1313,7 @@ int Manager::managerMenu() {
 int Manager::totalSelect() {
 	MYSQL_RES* sql_result;
 	MYSQL_ROW sql_row;
+	int totalCheck = 0;
 
 	mysql_init(&conn);
 
@@ -1332,7 +1341,7 @@ int Manager::totalSelect() {
 			return stoi(sql_row[1]);
 		}
 	}
-
+	return 0;
 	//mysql_store_result에 사용된 메모리를 헤체시킴-> 마치 malloc의 free역할
 	mysql_free_result(sql_result);
 }
@@ -1845,7 +1854,7 @@ int Customer::updatePlusCartQuantity() {
 					}
 					system("cls");
 					CartList();
-					cout << "카트 내 품목 추가가 완료 되었습니다." << endl;
+					cout << "카트 내 수량 추가가 완료 되었습니다." << endl;
 					break;
 				}
 			}
@@ -2051,7 +2060,7 @@ int Customer::buy() {
 		cart_Total += stoi(sql_row[3]);
 
 		if (query_stat != 0) {
-			printf("구매 내역을 추가할 수 없습니다.");
+			printf("주문 내역을 추가할 수 없습니다.");
 			Sleep(2000);
 			return 1;
 		}
@@ -2107,7 +2116,7 @@ int Customer::buy() {
 		system("cls");
 		cout << "구매가 완료되었습니다." << endl;
 		GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &presentCur);
-		cout << "지금까지의 구매내역을 보시겠습니까?" << endl;
+		cout << "지금까지의 주문내역을 보시겠습니까?" << endl;
 		if (YN_Check(2, presentCur.dwCursorPosition.Y + 2) == 0) {
 			system("cls");
 			query_stat = mysql_query(connection, "select * from usage_history");
@@ -2215,17 +2224,12 @@ int Customer::refund() {
 				Sleep(2000);
 			}
 			else {
-				cout << "scene4" << endl;
 				while ((sql_row = mysql_fetch_row(sql_result)) != NULL) {
 					//printf("%s, %s, %d\n", sql_row[0], sql_row[2], stoi(sql_row[4]));
 					//refundCheck = 1;
-					cout << "scene3" << endl;
 					if (!strcmp(sql_row[0], "buy")) {
-						//cout << "CHECK" << endl;
 						refundCheck = 2;
-						cout << "scene2" << endl;
 						if (!strcmp(sql_row[2], productName)) {
-							cout << "scene1" << endl;
 							sprintf(query, "update usage_history set history = 'refund', date = now(), refund_reason='%s' where productName='%s' limit 1", refund_reason, productName);
 							query_stat = mysql_query(connection, query);
 							if (query_stat != 0) {
@@ -2254,14 +2258,10 @@ int Customer::refund() {
 							refundCheck = 3;
 							break;
 						}
-						cout << "break1" << endl;
 					}
-					cout << "break2" << endl;
 				}
-				cout << "break3" << endl;
 			}
-			cout << "break4" << endl;
-
+			system("cls");
 			switch (refundCheck) {
 			case 1: 
 				cout << "주문 이력이 없습니다." << endl; 
@@ -2272,11 +2272,11 @@ int Customer::refund() {
 				cout << "3초뒤 자동으로 메인화면으로 이동합니다..." << endl;
 				Sleep(3000);
 				return 0;
-			case 3: cout << "환불이 완료되었습니다." << endl; 
+			case 3: cout << "환불이 완료되었습니다." << endl << endl;
 				Sleep(1000); break;
 			}
 
-			system("cls");
+			
 			GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &presentCur);
 			cout << "지금까지의 주문내역을 보시겠습니까?" << endl;
 			if (YN_Check(2, presentCur.dwCursorPosition.Y + 2) == 0) {
@@ -2464,8 +2464,8 @@ int Customer::customerMenu() {
 //고객 메인
 void Customer::customerMain() {
 	system("cls");
-	//customerTitle();
-	//Sleep(2000);
+	customerTitle();
+	Sleep(2000);
 	init();
 	while (true) {
 		int select = customerMenu();
@@ -2491,7 +2491,7 @@ int selectQuery() {
 	int listCount = 1;
 	mysql_init(&conn);
 
-	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);   //김세린 바보 똥개 메롱 야야 selfish 
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);  
 	mysql_set_character_set(connection, "euckr");
 	if (connection == NULL) {
 		//fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
@@ -2580,6 +2580,7 @@ int YN_Check(int x, int y) {
 		}
 	}
 }
+
 //초기화면 구성
 void init() {
 	//콘솔 크기 정하기
