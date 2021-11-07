@@ -357,7 +357,7 @@ int signup() {
 		printf("입력이 되지 않습니다.(insert)");
 		return 1;
 	}
-
+	cout << endl;
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &presentCur);
 	gotoxy(presentCur.dwCursorPosition.X + 44, presentCur.dwCursorPosition.Y + 1);
 	cout <<"회원가입이 완료 되었습니다." << endl;
