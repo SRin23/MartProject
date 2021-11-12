@@ -74,6 +74,7 @@ public:
 	Customer(string tableName) :tableName(tableName) {};
 	int CartList();
 	int CartListMenu();
+	int SelectCustomerProduct();
 	int addShoppingCart();
 	int delCartProduct();
 	int deleteAll();
@@ -1479,6 +1480,51 @@ int Customer::CartListMenu() {
 	}
 }
 
+//소비자가 보는 품목에는 제품의 본 가격이 나타나지 않게 표시(본가격!=소비자가격) 격차가 보이면 안좋을듯
+int Customer::SelectCustomerProduct() {
+	system("cls");
+	MYSQL_RES* sql_result;
+	MYSQL_ROW sql_row;
+	int listCount = 1;
+	mysql_init(&conn);
+
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
+	mysql_set_character_set(connection, "euckr");
+	if (connection == NULL) {
+		//fprintf(stderr, "Mysql connection error : %s\n", mysql_error(&conn));
+		printf("데이터베이스와의 연결이 끊어졌습니다.");
+		return 1;
+	}
+
+	query_stat = mysql_query(connection, "select * from product");
+	if (query_stat != 0) {
+		printf("값을 불러올 수 없습니다.(select)");
+		//fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+		return 1;
+	}
+
+	sql_result = mysql_store_result(connection);
+	if (sql_result == NULL) {
+		cout << "Empty!!" << endl;
+	}
+	else {
+		printf("┏━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━┓\n");
+		printf("┃ %3s ┃ %-16s ┃ %9s ┃ %8s ┃\n", "ID", "제품명", "소비자가격", "수량");
+		printf("┣━━━━━╋━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━┫\n");
+		while ((sql_row = mysql_fetch_row(sql_result)) != NULL) {
+			if (stoi(sql_row[3]) == 0) {
+				sprintf(query, "delete from product where productName='%s'", sql_row[0]);
+				query_stat = mysql_query(connection, query);
+				continue;
+			}
+			printf("┃ %3d ┃ %-16s ┃ %10d ┃ %8d ┃\n", listCount++, sql_row[0], stoi(sql_row[1]), stoi(sql_row[2]));	//출력
+		}
+		printf("┗━━━━━┻━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━┛\n");
+	}
+
+	mysql_free_result(sql_result);
+}
+
 //카트에 물품 추가 => 소비자 가격 끌어오기
 int Customer::addShoppingCart() {
 	char productName[30];
@@ -1490,7 +1536,7 @@ int Customer::addShoppingCart() {
 
 	while (true) {
 		system("cls");
-		selectQuery();
+		SelectCustomerProduct();
 
 		mysql_init(&conn);
 
