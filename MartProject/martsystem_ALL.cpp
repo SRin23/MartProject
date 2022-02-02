@@ -1,3 +1,31 @@
+/*
+	TODO
+		- 파일 분할
+		- 마트 지점 정하기(지점별로 DB 다르게) + 지점별 manager는 최대 5명? or 대표 매니저가 수락하면 OK?
+
+		[초기화면]
+		- 고객 수 제시
+		- 알림 화면 만들기(부족한 재고 알림?)
+		- 도움말 상세
+
+		[login]
+		- 비밀번호 * 개수 맞추기
+		- 존재하는 id인지, 존재하는 pw인지 확인
+		- 무조건 manager는 맨 앞에 @를 붙이자
+		* 회원 탈퇴는 customer안에서 할 수 있게 만들기
+		(만약, 지점 넣으면 회원가입에 지점명도 작성)
+
+		[manager]
+		품목 추가
+			 - 나가는 방법 설명해주기
+			 - 같은 제품 존재여부 확인
+			 + 유통기한이나 판매처? 추가하려면 추가하기
+			 + 품목 종류별로 정리하기
+			 + 번호로 입력하여 사려면 사기?
+
+
+*/
+
 #define _CRT_SECURE_NO_WARNINGS
 #include<mysql.h>
 #include<iostream>
@@ -314,7 +342,7 @@ int signup() {
 
 	gotoxy(50, 13);
 	printf("비밀번호 : ");
-	for (int i = 0; i < strlen(pw); i++) {
+	for (int i = 0; i < strlen(pw)-1; i++) {
 		printf("*");
 	}
 
@@ -325,7 +353,7 @@ int signup() {
 
 	gotoxy(45, 14);
 	printf("비밀번호 확인 : ");
-	for (int i = 0; i < strlen(pwCheck); i++) {
+	for (int i = 0; i < strlen(pwCheck)-1; i++) {
 		printf("*");
 	}
 
@@ -397,7 +425,7 @@ int signin() {
 
 	gotoxy(50, 12);
 	printf("비밀번호 : ");
-	for (int i = 0; i < strlen(pw); i++) {
+	for (int i = 0; i < strlen(pw)-1; i++) {
 		printf("*");
 	}
 
@@ -473,10 +501,11 @@ int idList() {
 	printf("┣━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━╋━━━━━━━┫\n");
 	while ((sql_row = mysql_fetch_row(sql_result)) != NULL) {
 		printf("┃ %3d ┃ %10s ┃ %16s ┃ ", listCount++, sql_row[0], sql_row[1]);
-		for (int i = 0; i < 16-strlen(sql_row[2]); i++) {
+		for (int i = 0; i < 17-strlen(sql_row[2]); i++) {
 			printf(" ");
 		}
-		for (int i = 0; i < strlen(sql_row[2]); i++) {
+		//cout << strlen(sql_row[2]) << endl;	공백으로 인해 글자 수가 하나 더 많다
+		for (int i = 0; i < strlen(sql_row[2])-1; i++) {
 			printf("*");
 		}
 		printf(" ┃ %5s ┃ \n", sql_row[3]);
