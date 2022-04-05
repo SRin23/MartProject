@@ -1,0 +1,12 @@
+insert into product (productName, productPrice, customerPrice, quantity) values ("아몬드", 4260, 7500, 529);
+insert into product (productName, productPrice, customerPrice, quantity) values ("바나나", 1250, 2900, 162);
+insert into product (productName, productPrice, customerPrice, quantity) values ("요거트", 1769, 2530, 253);
+insert into product (productName, productPrice, customerPrice, quantity) values ("홈런볼", 1200, 1600, 264);
+insert into product (productName, productPrice, customerPrice, quantity) values ("당근", 490, 910, 325);
+insert into product (productName, productPrice, customerPrice, quantity) values ("스파게티", 9600, 12900, 25);
+insert into product (productName, productPrice, customerPrice, quantity) values ("어묵", 1560, 2300, 163);
+insert into product (productName, productPrice, customerPrice, quantity) values ("계란", 4250, 6300, 130);
+insert into product (productName, productPrice, customerPrice, quantity) values ("사탕", 120, 300, 264);
+insert into product (productName, productPrice, customerPrice, quantity) values ("사과잼", 1980, 3200, 135);
+insert into product (productName, productPrice, customerPrice, quantity) values ("닭꼬치", 1200, 1500, 32);
+insert into product (productName, productPrice, customerPrice, quantity) values ("통조림", 1560, 1980, 525);
