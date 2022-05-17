@@ -58,6 +58,7 @@ void loginMain();
 int selectQuery();
 int YN_Check(int x, int y);
 void init();
+void defaultSet();
 void gotoxy(int x, int y);
 int keyControl();
 static int product_Count = 0;
@@ -221,6 +222,68 @@ void main() {
 }
 
 //-------------------------------------------------- login -----------------------------------------------------
+void defaultSet() {
+	MYSQL_RES* sql_result;
+	MYSQL_ROW sql_row;
+
+	mysql_init(&conn);
+
+	connection = mysql_real_connect(&conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306, (char*)NULL, 0);
+	mysql_set_character_set(connection, "euckr");
+
+	query_stat = mysql_query(connection, "select * from login_info");
+	if (query_stat != 0) {
+		gotoxy(55, 14);
+		printf("값을 불러올 수 없습니다.(select)");
+		return;
+	}
+
+	sql_result = mysql_store_result(connection);
+	boolean mCheck = false;
+	boolean cCheck = false;
+	while ((sql_row = mysql_fetch_row(sql_result)) != NULL) {
+		//printf("%s, %s, %s, %s\n", sql_row[0], sql_row[1], sql_row[2], sql_row[3]);
+		if (strcmp("manager", sql_row[1])) {
+			mCheck = true;
+		}
+		if (strcmp("customer", sql_row[1])) {
+			cCheck = true;
+		}
+	}
+
+	if (!mCheck) {
+		MYSQL_RES* sql_result;
+		string defaultM = "insert into login_info (name, id, pw, role) values ('관리자 ', 'manager ', '1234 ', 'M')";
+		const char* defaultManager = defaultM.c_str();
+
+		query_stat = mysql_query(connection, defaultManager);
+		if (query_stat != 0) {
+			printf("값을 불러올 수 없습니다.(insert)");
+			//fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+			return;
+		}
+
+		sql_result = mysql_store_result(connection);
+	}
+	if (!cCheck) {
+		MYSQL_RES* sql_result;
+		string defaultC = "insert into login_info (name, id, pw, role) values ('고객 ', 'customer ', '1234 ', 'C')";
+		const char* defaultCustomer = defaultC.c_str();
+
+
+		query_stat = mysql_query(connection, defaultCustomer);
+		if (query_stat != 0) {
+			printf("값을 불러올 수 없습니다.(insert)");
+			//fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
+			return;
+		}
+		sql_result = mysql_store_result(connection);
+	}
+	//mysql_store_result에 사용된 메모리를 헤체시킴-> 마치 malloc의 free역할
+	mysql_free_result(sql_result);
+}
+
+
 int createTable(string tableName) {
 	MYSQL_RES* sql_result;
 	mysql_init(&conn);
@@ -252,9 +315,8 @@ int createTable(string tableName) {
 		//fprintf(stderr, "Mysql query error : %s\n", mysql_error(&conn));
 		return 1;
 	}
-	sql_result = mysql_store_result(connection);
 
-	
+	sql_result = mysql_store_result(connection);
 }
 
 //Manager, Customer역할 정하기
@@ -2723,7 +2785,7 @@ int YN_Check(int x, int y) {
 void init() {
 	//콘솔 크기 정하기
 	system("mode con cols=120 lines=30");
-
+	defaultSet();
 	//깜빡거리는 커서 숨기기
 	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_CURSOR_INFO ConsoleCursor;
